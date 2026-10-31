@@ -1,0 +1,2823 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>装修报价管理工作台</title>
+<script src="libs/xlsx.full.min.js"></script>
+  <script src="libs/exceljs.min.js"></script>
+<style>
+:root {
+  --primary: #2c5f8a;
+  --primary-light: #e8f0f8;
+  --accent: #d9822b;
+  --danger: #c0392b;
+  --bg: #f5f7fa;
+  --card: #ffffff;
+  --border: #d9dee5;
+  --text: #2b3440;
+  --text-light: #66788a;
+  --partition: #e2ecf7;
+  --subtotal: #fff7e6;
+  /* ===== v5 主题变量（默认 = 深蓝科技主题） ===== */
+  --input-bg: #ffffff;
+  --btn-secondary-bg: #f0f2f5;
+  --tab-bg: #e7ecf2;
+  --region-bg: #f2f7fc;
+  --region-border: #c9d9e8;
+  --partition-border: #b8cde2;
+  --partition-total-bg: #eef4fb;
+  --qty-result-bg: #f3fafc;
+  --toast-bg: #333333;
+  --brand-accent: #e8a13a;
+  --brand-grad: linear-gradient(90deg,#f6dc9a,#e8a13a 55%,#c77f2a);
+  --brand-glow: rgba(232,161,58,.25);
+  --accent-glow: rgba(232,161,58,.18);
+  --shadow-strong: rgba(0,0,0,.45);
+  --shadow-glow: rgba(232,161,58,.14);
+  --shell-bg: radial-gradient(1100px 520px at 18% -8%,rgba(44,95,138,.55),transparent 58%),radial-gradient(900px 460px at 82% 8%,rgba(217,130,43,.22),transparent 55%),linear-gradient(158deg,#05080f 0%,#0a1020 46%,#0e152b 72%,#0a0f1c 100%);
+  --shell-text: #e8eef6;
+  --shell-strong: #f4f7fb;
+  --shell-muted: #9fb3cc;
+  --shell-foot: #6f84a0;
+  --shell-accent: #f0c86a;
+  --shell-accent-border: rgba(240,200,106,.45);
+  --shell-accent-soft: rgba(240,200,106,.08);
+  --shell-glow-a: rgba(45,105,190,.28);
+  --shell-glow-b: rgba(217,130,43,.16);
+  --shell-card-bg: rgba(255,255,255,.045);
+  --shell-card-border: rgba(255,255,255,.12);
+  --shell-card-hover-border: rgba(240,200,106,.6);
+  --shell-icon-bg: linear-gradient(135deg,rgba(240,200,106,.2),rgba(232,161,58,.08));
+  --shell-icon-border: rgba(240,200,106,.35);
+  --shell-top-bg: rgba(6,10,18,.86);
+  --shell-top-border: rgba(240,200,106,.28);
+  --shell-top-shadow: 0 8px 30px rgba(0,0,0,.35);
+  --nav-bg: rgba(255,255,255,.05);
+  --nav-border: rgba(255,255,255,.14);
+  --nav-text: #c7d4e4;
+  --nav-hover-border: rgba(240,200,106,.55);
+  --nav-hover-text: #f6dc9a;
+  --btn-accent-bg: linear-gradient(135deg,#e8a13a,#c77f2a);
+  --btn-accent-text: #0a1020;
+  --panel-head-border: rgba(240,200,106,.3);
+  --proj-card-bg: linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+  --proj-card-top: rgba(232,161,58,.6);
+  --proj-card-glow: radial-gradient(circle,rgba(232,161,58,.18),transparent 70%);
+  --proj-meta-border: rgba(255,255,255,.14);
+  --proj-total: #f6dc9a;
+  --mask-bg: rgba(4,7,14,.68);
+  --modal-box-bg: linear-gradient(180deg,#121c32,#0a1020);
+  --modal-box-border: rgba(255,255,255,.16);
+  --modal-box-shadow: 0 22px 60px rgba(0,0,0,.6);
+  --modal-input-bg: #0d1428;
+  --modal-input-border: rgba(255,255,255,.18);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; background: var(--bg); color: var(--text); }
+.app { max-width: 1360px; margin: 0 auto; padding: 16px; }
+header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 12px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 14px; }
+header h1 { font-size: 20px; color: var(--primary); }
+.proj-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.proj-bar label { color: var(--text-light); font-size: 13px; }
+select, input, textarea, button { font-size: 14px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--input-bg); color: var(--text); }
+textarea { resize: vertical; }
+button { cursor: pointer; background: var(--primary); color: #fff; border: none; transition: opacity .15s; }
+button:hover { opacity: .85; }
+button.secondary { background: var(--btn-secondary-bg); color: var(--text); border: 1px solid var(--border); }
+button.danger { background: var(--danger); }
+button.accent { background: var(--accent); }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+.card h2 { font-size: 16px; color: var(--primary); margin-bottom: 10px; border-left: 4px solid var(--primary); padding-left: 8px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.toolbar button { font-size: 13px; padding: 5px 12px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.tab { padding: 7px 18px; border-radius: 8px; background: var(--tab-bg); color: var(--text); border: 1px solid var(--border); }
+.tab.active { background: var(--primary); color: #fff; }
+.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.info-grid .field { display: flex; flex-direction: column; gap: 4px; }
+.info-grid .field label { font-size: 12px; color: var(--text-light); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { border: 1px solid var(--border); padding: 5px 6px; text-align: center; }
+th { background: var(--primary-light); color: var(--primary); font-weight: 600; white-space: nowrap; }
+td input { width: 100%; border: none; background: transparent; text-align: center; padding: 3px 2px; }
+td textarea { width: 100%; border: none; background: transparent; font-size: 12px; }
+td input:focus, td textarea:focus { outline: 1px solid var(--primary); background: var(--input-bg); }
+td.auto { color: var(--text-light); font-weight: 600; }
+.table-wrap { overflow-x: auto; max-height: 640px; overflow-y: auto; }
+.row-actions button { padding: 2px 6px; font-size: 12px; margin: 0 2px; }
+.region-row td { background: var(--region-bg); border-color: var(--region-border); }
+.partition-row td { background: var(--partition); border-color: var(--partition-border); }
+.partition-header { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-weight: 700; color: var(--primary); }
+.region-header { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.region-header .lab { font-size: 12px; color: var(--primary); font-weight: 600; white-space: nowrap; }
+.region-header .unit { font-size: 12px; color: var(--text-light); white-space: nowrap; }
+.region-header input.regionName { width: 120px; background: var(--input-bg); border: 1px solid var(--border); }
+.region-header input.regionNum { width: 62px; background: var(--input-bg); border: 1px solid var(--border); }
+.region-header button, .partition-header button { font-size: 12px; padding: 2px 8px; }
+.subtotal-row td { background: var(--subtotal); font-weight: 600; }
+.total-row td { background: var(--subtotal); font-weight: 700; color: var(--accent); }
+.partition-total-row td { background: var(--partition-total-bg); font-weight: 700; color: var(--primary); }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.summary-panel table { margin-top: 4px; }
+.config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.config-grid .field { display: flex; flex-direction: column; gap: 4px; }
+.config-grid label { font-size: 12px; color: var(--text-light); }
+.dual { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.form-grid .field { display: flex; flex-direction: column; gap: 4px; }
+.form-grid .field label { font-size: 12px; color: var(--text-light); }
+.qty-note { font-size: 11px; color: var(--text-light); }
+.qty-formula { color: var(--accent); }
+.qty-cell, .unit-cell { display: flex; flex-direction: column; gap: 4px; }
+.qty-cell select, .unit-cell select { width: 100%; padding: 4px 6px; font-size: 12px; border-radius: 6px; border: 1px solid var(--border, #ccc); background: var(--input-bg, #fff); color: var(--text, #222); }
+.qty-cell input, .unit-cell input { width: 100%; box-sizing: border-box; }
+.qty-result { width: 100%; box-sizing: border-box; padding: 4px 6px; font-size: 12px; font-weight: 600; color: var(--accent, #0a7ea4); background: var(--qty-result-bg); border: 1px solid var(--border, #ccc); border-radius: 6px; }
+.hidden { display: none; }
+.muted { color: var(--text-light); font-size: 12px; }
+#toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--toast-bg); color: #fff; padding: 10px 18px; border-radius: 8px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 999; }
+#toast.show { opacity: 1; }
+.empty-tip { color: var(--text-light); text-align: center; padding: 24px 0; }
+@media print {
+  .no-print { display: none !important; }
+  .card { border: none; box-shadow: none; }
+  body { background: #fff; }
+  .app { max-width: 100%; padding: 0; }
+  th { background: #f0f0f0 !important; color: #000 !important; -webkit-print-color-adjust: exact; }
+}
+
+/* ===== 首页 · 深色科技感 ===== */
+#homeView{position:relative;min-height:100vh;color:var(--shell-text);background:var(--shell-bg);overflow:hidden;padding:34px 20px 40px}
+#homeView::before,#homeView::after{content:"";position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;pointer-events:none}
+#homeView::before{width:420px;height:420px;left:-120px;top:38%;background:var(--shell-glow-a)}
+#homeView::after{width:360px;height:360px;right:-90px;bottom:6%;background:var(--shell-glow-b)}
+.home-inner{position:relative;z-index:1;max-width:1060px;margin:0 auto}
+.home-hero{text-align:center;margin-bottom:34px}
+.home-badge{display:inline-block;font-size:12px;letter-spacing:3px;color:var(--shell-accent);border:1px solid var(--shell-accent-border);border-radius:999px;padding:5px 18px;background:var(--shell-accent-soft);margin-bottom:16px}
+.home-hero h1{font-size:38px;font-weight:700;letter-spacing:2px;margin:0 0 10px;background:var(--brand-grad);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 26px var(--brand-glow)}
+.home-sub{color:var(--shell-muted);font-size:14px;letter-spacing:1px}
+.home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+.home-card{position:relative;border-radius:14px;padding:24px 20px 20px;cursor:pointer;background:var(--shell-card-bg);border:1px solid var(--shell-card-border);backdrop-filter:blur(8px);transition:transform .18s,box-shadow .18s,border-color .18s;overflow:hidden}
+.home-card:hover{transform:translateY(-5px);border-color:var(--shell-card-hover-border);box-shadow:0 16px 34px var(--shadow-strong),0 0 24px var(--shadow-glow)}
+.home-card .home-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--shell-icon-bg);border:1px solid var(--shell-icon-border);color:var(--shell-accent);margin-bottom:14px}
+.home-card .home-icon svg{width:26px;height:26px}
+.home-card h2{font-size:18px;margin:0 0 8px;color:var(--shell-strong)}
+.home-card p{font-size:13px;color:var(--shell-muted);margin:0 0 12px;line-height:1.5}
+.home-meta{font-size:12px;color:var(--shell-accent)}
+.home-badge-count{position:absolute;top:12px;right:12px;min-width:22px;height:22px;border-radius:999px;background:var(--danger);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 7px;box-shadow:0 0 12px rgba(224,91,77,.5)}
+.home-foot{position:relative;z-index:1;text-align:center;color:var(--shell-foot);font-size:12px;margin-top:34px}
+
+/* ===== 弹窗 ===== */
+.modal-mask{position:fixed;inset:0;background:var(--mask-bg);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:200}
+.modal-box{position:relative;width:500px;max-width:92vw;max-height:86vh;overflow:auto;border-radius:14px;padding:22px 24px;color:var(--shell-text);background:var(--modal-box-bg);border:1px solid var(--modal-box-border);box-shadow:var(--modal-box-shadow)}
+.modal-box.wide{width:680px}
+.modal-box h3{font-size:18px;margin:0 0 16px;color:var(--shell-accent);letter-spacing:1px;border-left:4px solid var(--brand-accent);padding-left:10px}
+.modal-box .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.modal-box .field label{font-size:13px;color:var(--shell-muted)}
+.modal-box input[type=text]{background:var(--modal-input-bg);border:1px solid var(--modal-input-border);color:var(--shell-text);border-radius:8px;padding:9px 12px;font-size:14px;width:100%}
+.modal-box input[type=text]:focus{outline:none;border-color:var(--brand-accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.modal-box .toolbar{justify-content:flex-start}
+.modal-box button{border-radius:8px}
+
+/* ===== 回收站 / 模板管理 ===== */
+.trash-item{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;margin-bottom:10px;border-radius:10px;background:var(--shell-card-bg);border:1px solid var(--shell-card-border)}
+.trash-item .t-name{font-size:15px;font-weight:600;color:var(--shell-strong)}
+.trash-item .t-sub{font-size:12px;color:var(--shell-muted);margin-top:4px}
+.trash-item .t-actions{display:flex;gap:8px;flex-shrink:0}
+.trash-empty{text-align:center;color:var(--shell-muted);font-size:14px;padding:30px 0}
+.tmpl-info{background:var(--shell-card-bg);border:1px solid var(--shell-card-border);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.tmpl-info code{color:var(--shell-accent);background:var(--shell-accent-soft);border-radius:5px;padding:2px 7px;font-size:13px}
+.tmpl-info .t-line{font-size:13px;color:var(--shell-muted);margin:5px 0;line-height:1.6}
+.tmpl-info .t-line b{color:var(--shell-strong)}
+.home-btn-back{background:var(--btn-accent-bg);color:var(--btn-accent-text);font-weight:700;border:none;border-radius:8px;padding:6px 14px;font-size:13px;cursor:pointer;box-shadow:0 2px 10px var(--accent-glow)}
+/* fix: .modal-mask 的 display:flex 后定义覆盖了 .hidden 的 display:none，导致弹窗默认显示盖住首页；用更高特异性规则恢复隐藏 */
+.modal-mask.hidden{display:none}
+/* ===== 工作台外壳：顶部导航 + 面板（装修行业暖金系） ===== */
+.shell{min-height:100vh;color:var(--shell-text);background:var(--shell-bg)}
+.shell-top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:22px;padding:14px 30px;background:var(--shell-top-bg);border-bottom:1px solid var(--shell-top-border);backdrop-filter:blur(12px);box-shadow:var(--shell-top-shadow)}
+.shell-brand{font-size:20px;font-weight:800;letter-spacing:2px;background:var(--brand-grad);-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}
+.brand-sub{display:block;font-size:10px;letter-spacing:4px;color:var(--shell-foot);font-weight:600;margin-top:2px}
+.shell-nav{display:flex;gap:10px;margin-left:auto;flex-wrap:wrap}
+.nav-btn{position:relative;border:1px solid var(--nav-border);background:var(--nav-bg);color:var(--nav-text);border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;transition:all .18s}
+.nav-btn:hover{border-color:var(--nav-hover-border);color:var(--nav-hover-text)}
+.nav-btn.active{background:var(--btn-accent-bg);color:var(--btn-accent-text);border-color:transparent;box-shadow:0 4px 18px var(--accent-glow)}
+.nav-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:999px;background:var(--danger);color:#fff;font-size:11px;font-weight:700;margin-left:7px;padding:0 5px}
+.nav-badge.hidden{display:none}
+.shell-body{max-width:1200px;margin:0 auto;padding:28px 30px 10px}
+.shell-panel{animation:panelIn .22s ease}
+@keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px dashed var(--panel-head-border)}
+.panel-head h2{font-size:20px;margin:0;color:var(--shell-strong);letter-spacing:1px;padding-left:12px;border-left:4px solid var(--brand-accent)}
+.panel-meta{font-size:13px;color:var(--shell-muted)}
+.proj-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.proj-card{position:relative;border-radius:14px;padding:20px 20px 16px;cursor:pointer;background:var(--proj-card-bg);border:1px solid var(--shell-card-border);border-top:3px solid var(--proj-card-top);transition:transform .18s,box-shadow .18s,border-color .18s;overflow:hidden}
+.proj-card::after{content:"";position:absolute;right:-24px;top:-24px;width:90px;height:90px;border-radius:50%;background:var(--proj-card-glow)}
+.proj-card:hover{transform:translateY(-4px);border-color:var(--shell-card-hover-border);box-shadow:0 14px 30px var(--shadow-strong),0 0 20px var(--shadow-glow)}
+.proj-card .p-name{font-size:17px;font-weight:700;color:var(--shell-strong);margin-bottom:8px}
+.proj-card .p-sub{font-size:13px;color:var(--shell-muted);line-height:1.6;margin-bottom:12px}
+.proj-card .p-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--shell-accent);border-top:1px dashed var(--proj-meta-border);padding-top:10px}
+.proj-card .p-total{font-size:13px;font-weight:700;color:var(--proj-total)}
+.proj-empty{text-align:center;color:var(--shell-foot);font-size:14px;padding:60px 0}
+.modal-close{position:absolute;top:14px;right:16px;width:30px;height:30px;border-radius:8px;border:1px solid var(--modal-input-border);background:var(--modal-input-bg);color:var(--nav-text);font-size:18px;line-height:1;cursor:pointer}
+.modal-close:hover{color:var(--nav-hover-text);border-color:var(--nav-hover-border)}
+.shell-foot{max-width:1200px;margin:0 auto;padding:22px 30px 40px;color:var(--shell-foot);font-size:12px;text-align:center}
+/* ===== v5 新增：多选 / 批量操作 / 主题面板 ===== */
+.sel-all{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--shell-muted);cursor:pointer;user-select:none;white-space:nowrap}
+.sel-all input{width:16px;height:16px;accent-color:var(--shell-accent);cursor:pointer}
+.sel-cb{width:18px;height:18px;cursor:pointer;accent-color:var(--shell-accent);flex-shrink:0}
+.proj-card .sel-cb{position:absolute;top:14px;right:14px;z-index:2}
+.proj-card.selected{border-color:var(--shell-accent) !important;box-shadow:0 0 0 2px var(--shell-accent-soft),0 14px 30px var(--shadow-strong);transform:translateY(-2px)}
+.trash-item .sel-cb{margin-right:2px}
+.batch-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-top:4px}
+.theme-item{border:2px solid var(--modal-input-border);border-radius:12px;padding:14px;cursor:pointer;text-align:left;background:var(--modal-input-bg);transition:border-color .18s,transform .18s,box-shadow .18s;display:flex;flex-direction:column;gap:8px;position:relative}
+.theme-item:hover{border-color:var(--shell-accent);transform:translateY(-2px)}
+.theme-item.active{border-color:var(--shell-accent);box-shadow:0 0 0 2px var(--shell-accent-soft)}
+.theme-swatch{height:46px;border-radius:8px;border:1px solid rgba(0,0,0,.14);background:var(--shell-bg);position:relative;overflow:hidden}
+.theme-swatch::after{content:"";position:absolute;left:8px;top:8px;width:20px;height:20px;border-radius:5px;background:var(--proj-card-bg);border:1px solid var(--shell-card-border);box-shadow:0 2px 8px var(--shadow-strong)}
+.theme-name{font-size:14px;font-weight:700;color:var(--shell-strong)}
+.theme-desc{font-size:11px;color:var(--shell-muted);line-height:1.5}
+.theme-check{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;background:var(--shell-accent);color:var(--btn-accent-text);font-size:13px;line-height:20px;text-align:center;font-weight:700;display:none}
+.theme-item.active .theme-check{display:block}
+#confirmMsg{font-size:14px;line-height:1.8;color:var(--shell-muted);word-break:break-all}
+#confirmMsg b{color:var(--shell-strong)}
+</style>
+</head>
+<body>
+
+<div id="homeView">
+  <div class="shell">
+    <header class="shell-top">
+      <div class="shell-brand">装修报价管理工作台<span class="brand-sub">DECORATION QUOTE DESK</span></div>
+      <nav class="shell-nav">
+        <button class="nav-btn active" data-view="list" onclick="shellNav('list')">报价管理</button>
+        <button class="nav-btn" onclick="openNewProjModal()">新建报价单</button>
+        <button class="nav-btn" data-view="tmpl" onclick="shellNav('tmpl')">模板管理</button>
+        <button class="nav-btn" data-view="trash" onclick="shellNav('trash')">回收站<span class="nav-badge hidden" id="homeTrashCount">0</span></button>
+        <button class="nav-btn" onclick="openThemeModal()">主题</button>
+      </nav>
+    </header>
+    <div class="shell-body">
+      <section class="shell-panel" id="shellList">
+        <div class="panel-head">
+          <h2>全部报价单</h2>
+          <div class="batch-bar">
+            <span class="panel-meta" id="homeProjCount"></span>
+            <label class="sel-all"><input type="checkbox" id="selAllCb" onchange="toggleSelectAll(this.checked)"> 全选</label>
+            <span class="panel-meta" id="selCount">已选 0 项</span>
+            <button class="danger" id="batchDelBtn" onclick="batchDeleteSelected()" disabled>批量删除</button>
+          </div>
+        </div>
+        <div class="proj-list" id="projListBox"></div>
+      </section>
+      <section class="shell-panel hidden" id="shellTmpl">
+        <div class="panel-head">
+          <h2>模板管理</h2>
+          <button class="secondary" onclick="shellNav('list')">← 返回报价列表</button>
+        </div>
+        <div class="tmpl-info">
+          <div class="t-line">默认模板：<code>templates/装修报价模板.xlsx</code></div>
+          <div class="t-line">说明：<b>从模板一键新建报价单</b> 将直接基于内置标准模板创建新项目（项目信息 / 明细报价 / 定制 / 水电 / 汇总），创建后可继续编辑。</div>
+          <div class="t-line">当前模板：<b id="tmplSourceLabel">内置标准模板</b></div>
+        </div>
+        <div class="toolbar">
+          <button class="accent" onclick="createFromTemplate()">从模板一键新建报价单</button>
+          <button class="secondary" onclick="document.getElementById('templateFile').click()">选择本地模板文件替换</button>
+          <input type="file" id="templateFile" accept=".xlsx,.xls" class="hidden" onchange="importTemplateFile(event)">
+        </div>
+        <p style="color:var(--shell-foot);font-size:12px;margin-top:10px;">选择本地模板后将在本浏览器内生效，不影响原始模板文件。</p>
+      </section>
+      <section class="shell-panel hidden" id="shellTrash">
+        <div class="panel-head">
+          <h2>回收站</h2>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <span class="panel-meta" id="trashSummary"></span>
+            <label class="sel-all"><input type="checkbox" id="trashSelAllCb" onchange="toggleTrashSelectAll(this.checked)"> 全选</label>
+            <span class="panel-meta" id="trashSelCount">已选 0 项</span>
+            <button class="secondary" id="restoreSelBtn" onclick="restoreTrashSelected()" disabled>批量恢复</button>
+            <button class="secondary" onclick="shellNav('list')">← 返回报价列表</button>
+            <button class="danger" onclick="emptyTrash()">一键清空</button>
+          </div>
+        </div>
+        <div id="trashList" style="margin-top:12px;"></div>
+      </section>
+    </div>
+    <div class="shell-foot">数据保存在本机浏览器 localStorage，重要报价请定期「导出 JSON 备份」</div>
+  </div>
+</div>
+
+<!-- v5 通用确认弹窗（防误删） -->
+<div class="modal-mask hidden" id="confirmModal">
+  <div class="modal-box" style="width:480px">
+    <button class="modal-close" onclick="closeConfirm()">×</button>
+    <h3 id="confirmTitle">操作确认</h3>
+    <div id="confirmMsg"></div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+      <button class="secondary" onclick="closeConfirm()">取消</button>
+      <button class="danger" id="confirmOkBtn" onclick="confirmOk()">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- v5 主题选择弹窗 -->
+<div class="modal-mask hidden" id="themeModal">
+  <div class="modal-box" style="width:700px">
+    <button class="modal-close" onclick="closeModal('themeModal')">×</button>
+    <h3>选择主题风格</h3>
+    <p style="color:var(--shell-muted);font-size:13px;margin:0 0 12px;">切换后立即生效并自动保存，下次打开保持所选主题。</p>
+    <div class="theme-grid" id="themeGrid"></div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+      <button class="secondary" onclick="closeModal('themeModal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <header class="no-print">
+    <h1>装修报价管理工作台</h1>
+    <button class="home-btn-back" onclick="goHome()">← 返回首页</button>
+    <div class="proj-bar">
+      <label>项目：</label>
+      <select id="projSelect"></select>
+      <button class="secondary" onclick="addProject()">新建</button>
+      <button class="secondary" onclick="renameProject()">重命名</button>
+      <button class="danger" onclick="deleteProject()">删除</button>
+    </div>
+  </header>
+
+  <div class="card no-print">
+    <div class="toolbar">
+      <button class="accent" onclick="downloadBlankTemplate()">下载空白模板</button>
+      <button onclick="document.getElementById('importFile').click()">导入 Excel</button>
+      <input type="file" id="importFile" accept=".xlsx,.xls,.csv" class="hidden" onchange="importExcel(event)">
+      <button onclick="exportExcel()">导出 Excel</button>
+      <button class="secondary" onclick="exportJSON()">导出 JSON 备份</button>
+      <button class="secondary" onclick="document.getElementById('importJsonFile').click()">导入 JSON 备份</button>
+      <input type="file" id="importJsonFile" accept=".json" class="hidden" onchange="importJSON(event)">
+      <button class="secondary" onclick="addPartition()">+ 添加大分区</button>
+      <button class="secondary" onclick="addRegion()">+ 添加区域</button>
+      <button class="secondary" onclick="window.print()">打印报价单</button>
+    </div>
+  </div>
+
+  <div class="tabs no-print">
+    <button class="tab active" data-mod="detail" onclick="switchModule('detail')">明细报价</button>
+    <button class="tab" data-mod="custom" onclick="switchModule('custom')">定制明细</button>
+    <button class="tab" data-mod="water" onclick="switchModule('water')">水电明细</button>
+  </div>
+
+  <div class="card no-print" id="mod-info">
+    <h2>报价单页眉（公司信息）</h2>
+    <div class="form-grid">
+      <div class="field"><label>公司名称</label><input id="companyName" onchange="saveCompany()"></div>
+      <div class="field"><label>公司地址</label><input id="companyAddress" onchange="saveCompany()"></div>
+      <div class="field"><label>工程地点</label><input id="companySite" onchange="saveCompany()"></div>
+      <div class="field"><label>联系电话</label><input id="companyPhone" onchange="saveCompany()"></div>
+    </div>
+  </div>
+
+  <div class="card no-print">
+    <h2>项目信息</h2>
+    <div class="info-grid">
+      <div class="field"><label>项目名称</label><input id="projName" onchange="saveCurrent()"></div>
+      <div class="field"><label>客户</label><input id="client" onchange="saveCurrent()"></div>
+      <div class="field"><label>地址</label><input id="address" onchange="saveCurrent()"></div>
+      <div class="field"><label>报价日期</label><input id="quoteDate" type="date" onchange="saveCurrent()"></div>
+      <div class="field"><label>备注</label><input id="remark" onchange="saveCurrent()"></div>
+    </div>
+  </div>
+
+  <div class="card no-print">
+    <h2>费用配置（扩展设置）</h2>
+    <div class="config-grid">
+      <div class="field"><label>材料损耗率 (%)</label><input id="lossRate" type="number" min="0" step="0.1" value="0" onchange="saveCurrent()"></div>
+      <div class="field"><label>管理费率 (%)</label><input id="mgmtRate" type="number" min="0" step="0.1" value="0" onchange="saveCurrent()"></div>
+      <div class="field"><label>税率 (%)</label><input id="taxRate" type="number" min="0" step="0.1" value="0" onchange="saveCurrent()"></div>
+      <div class="field"><label>说明</label><span class="muted">损耗/管理费/税金基于明细合计叠加；设为 0 即不启用。工程量支持公式：=面积、=周长*房高+面积、=周长、=数量*单价 等。</span></div>
+    </div>
+  </div>
+
+  <div class="card" id="mod-detail">
+    <h2 class="no-print">明细报价表（大分区 → 区域 → 6 列明细）</h2>
+    <div class="table-wrap">
+      <table id="detailTable">
+        <tbody id="detailBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card hidden" id="mod-custom">
+    <h2 class="no-print">定制明细（全屋定制 + 橱柜定制）</h2>
+    <div class="form-grid" style="margin-bottom:12px;">
+      <div class="field"><label>客户姓名</label><input id="custName" onchange="saveCustom()"></div>
+      <div class="field"><label>客户电话</label><input id="custPhone" onchange="saveCustom()"></div>
+      <div class="field"><label>品牌及类型</label><input id="custBrand" onchange="saveCustom()"></div>
+      <div class="field"><label>板材级别</label><input id="custBoard" onchange="saveCustom()"></div>
+      <div class="field"><label>客户地址</label><input id="custAddress" onchange="saveCustom()"></div>
+      <div class="field"><label>签订日期</label><input id="custSignDate" onchange="saveCustom()"></div>
+      <div class="field"><label>安装日期</label><input id="custInstallDate" onchange="saveCustom()"></div>
+      <div class="field"><label>负责人</label><input id="custOwner" onchange="saveCustom()"></div>
+      <div class="field"><label>负责人电话</label><input id="custOwnerPhone" onchange="saveCustom()"></div>
+    </div>
+    <div class="dual">
+      <div>
+        <h3>全屋定制部分</h3>
+        <div class="table-wrap" style="max-height:420px;">
+          <table>
+            <thead><tr><th>序号</th><th>项目名称</th><th>数量</th><th>单位</th><th>单价(元)</th><th>小计(元)</th><th class="no-print">操作</th></tr></thead>
+            <tbody id="wardrobeBody"></tbody>
+          </table>
+        </div>
+        <p class="muted" style="margin-top:6px;">全屋定制总价：<b id="wardrobeTotal">0.00</b> 元</p>
+        <div class="toolbar no-print" style="margin-top:6px;"><button class="secondary" onclick="addCustomRow('wardrobe')">+ 添加行</button></div>
+      </div>
+      <div>
+        <h3>橱柜定制部分</h3>
+        <div class="table-wrap" style="max-height:420px;">
+          <table>
+            <thead><tr><th>序号</th><th>项目名称</th><th>数量</th><th>单位</th><th>单价(元)</th><th>小计(元)</th><th class="no-print">操作</th></tr></thead>
+            <tbody id="kitchenBody"></tbody>
+          </table>
+        </div>
+        <p class="muted" style="margin-top:6px;">橱柜定制总价：<b id="kitchenTotal">0.00</b> 元</p>
+        <div class="toolbar no-print" style="margin-top:6px;"><button class="secondary" onclick="addCustomRow('kitchen')">+ 添加行</button></div>
+      </div>
+    </div>
+    <div class="info-grid" style="margin-top:12px;">
+      <div class="field"><label>定制及橱柜合计总价（自动）</label><input id="customGrandTotal" readonly></div>
+      <div class="field"><label>最终总价（自动）</label><input id="customFinalTotal" readonly></div>
+    </div>
+    <div class="form-grid" style="margin-top:12px;">
+      <div class="field"><label>客户确认签字</label><input id="custSignature" onchange="saveCustom()"></div>
+      <div class="field"><label>备注</label><textarea id="custRemark" rows="2" onchange="saveCustom()"></textarea></div>
+    </div>
+  </div>
+
+  <div class="card hidden" id="mod-water">
+    <h2 class="no-print">水电明细（现场工程量 + 单项报价参考）</h2>
+    <h3>现场水电项目工程量明细</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>序号</th><th>工程项目名称</th><th>工程量</th><th>单位</th><th>单价(元)</th><th>小计(元)</th><th>备注</th><th class="no-print">操作</th></tr></thead>
+        <tbody id="waterBody"></tbody>
+      </table>
+    </div>
+    <p class="muted" style="margin:6px 0;">现场工程量合计：<b id="waterTotal">0.00</b> 元</p>
+    <div class="toolbar no-print" style="margin-bottom:14px;"><button class="secondary" onclick="addWaterRow()">+ 添加工程行</button></div>
+    <h3>单项报价参考</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>序号</th><th>项目名称</th><th>工程量</th><th>单位</th><th>单价(元)</th><th>备注</th><th class="no-print">操作</th></tr></thead>
+        <tbody id="refBody"></tbody>
+      </table>
+    </div>
+    <div class="toolbar no-print" style="margin:6px 0 14px;"><button class="secondary" onclick="addRefRow()">+ 添加参考行</button></div>
+    <h3>服务条款</h3>
+    <textarea id="waterTerms" rows="10" style="width:100%;" onchange="saveWater()"></textarea>
+  </div>
+
+  <div class="card">
+    <h2 class="no-print">报价汇总</h2>
+    <div class="summary-grid">
+      <div class="summary-panel">
+        <table>
+          <thead><tr><th>大分区</th><th>区域数</th><th>行数</th><th>合计(元)</th><th>占比</th></tr></thead>
+          <tbody id="partitionBody"></tbody>
+        </table>
+      </div>
+      <div class="summary-panel">
+        <table>
+          <thead><tr><th>区域</th><th>房高(m)</th><th>面积(m²)</th><th>周长(m)</th><th>行数</th><th>合计(元)</th><th>占比</th></tr></thead>
+          <tbody id="regionBody"></tbody>
+        </table>
+      </div>
+      <div class="summary-panel">
+        <table>
+          <thead><tr><th>汇总项</th><th>金额(元)</th></tr></thead>
+          <tbody id="totalBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask hidden" id="newProjModal">
+  <div class="modal-box">
+    <h3>新建报价单<button class="modal-close" onclick="closeModal('newProjModal')" title="关闭">×</button></h3>
+    <div class="field"><label>项目名称</label><input type="text" id="newProjName" placeholder="例如：张先生家装项目"></div>
+    <div class="field"><label>客户名称</label><input type="text" id="newProjClient" placeholder="例如：张先生"></div>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeModal('newProjModal')">取消</button>
+      <button class="accent" onclick="createProjectFromDialog()">创建并进入</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script>
+/* __CORE_BEGIN__ */
+
+/* =========================================================
+ * QuoteCore v4 —— 装修报价管理工作台核心（无 DOM，Node 可测）
+ * 结构：大分区(partitions) → 区域(regions) → 6 列明细(rows)
+ * 附加：定制明细(custom) / 水电明细(water) / 公司页眉(company)
+ * 公式：工程量支持语义公式（=面积 / =周长*房高+面积 / 跨区域引用）
+ * ========================================================= */
+var QuoteCore = (function () {
+  "use strict";
+
+  var NEW_HEADERS = ["项目名称", "工程量", "单位", "单价（元）", "合计（元）", "施工说明（施工位置、辅料品牌、尺寸、工艺标准）"];
+  var SIZE_LABELS = { height: "房高（米）", area: "面积（平米）", perimeter: "周长（米）" };
+  var SIZE_TOKENS = { height: "房高", area: "面积", perimeter: "周长" };
+  // 语义 token：中文（含全角标点）+ 字母数字 + 半角点（用于 区域名.尺寸 / 区域名.项目.字段）
+  var TOKEN_RE = /[\u4e00-\u9fff\u3000-\u303f\uff00-\uffefA-Za-z][\u4e00-\u9fff\u3000-\u303f\uff00-\uffefA-Za-z0-9.]*/g;
+  var ARITH_RE = /^[\d+\-*/().\s]+$/;
+
+  /* ---------------- 基础工具 ---------------- */
+  function cellStr(v) {
+    if (v === null || v === undefined) return "";
+    if (typeof v === "number") return String(v);
+    return String(v);
+  }
+  function numOr0(v) {
+    if (v === null || v === undefined || v === "") return 0;
+    if (typeof v === "number") return isFinite(v) ? v : 0;
+    var n = parseFloat(String(v).trim());
+    return isFinite(n) ? n : 0;
+  }
+  function round2(v) {
+    var n = Number(v);
+    if (!isFinite(n)) return 0;
+    return Math.round(n * 100) / 100;
+  }
+  function fmt(v) {
+    var n = Number(v);
+    if (!isFinite(n)) return "0.00";
+    return (Math.round(n * 100) / 100).toFixed(2);
+  }
+  function stripPrefix(s, prefix) {
+    s = String(s || "");
+    var i = s.indexOf(prefix);
+    if (i >= 0) s = s.slice(i + prefix.length);
+    return s.replace(/^[:：\s]+/, "").trim();
+  }
+  function safeArith(s) {
+    s = String(s || "").trim();
+    if (s[0] === "=") s = s.slice(1);
+    s = s.replace(/[^-()\d+*\/.\s]/g, "");
+    if (!ARITH_RE.test(s)) return NaN;
+    try {
+      var v = Function('"use strict";return (' + s + ')')();
+      return isFinite(v) ? v : NaN;
+    } catch (e) { return NaN; }
+  }
+
+  /* ---------------- 公式求值 ---------------- */
+  function regSize(reg, key) {
+    if (!reg) return 0;
+    var v = reg[key];
+    if (v === null || v === undefined || v === "") return 0;
+    if (typeof v === "number") return v;
+    var s = String(v).trim();
+    if (s[0] === "=") {
+      var n = safeArith(s);
+      return isNaN(n) ? 0 : round2(n);
+    }
+    return numOr0(s);
+  }
+  function findRegionByName(project, name) {
+    name = String(name || "").trim();
+    var parts = project.partitions || [];
+    for (var i = 0; i < parts.length; i++) {
+      var regs = parts[i].regions || [];
+      for (var j = 0; j < regs.length; j++) {
+        if (String(regs[j].name || "").trim() === name) return regs[j];
+      }
+    }
+    return null;
+  }
+  function findRowByItem(reg, itemName) {
+    itemName = String(itemName || "").trim();
+    var rows = (reg && reg.rows) || [];
+    for (var i = 0; i < rows.length; i++) {
+      if (String(rows[i].item || "").trim() === itemName) return rows[i];
+    }
+    return null;
+  }
+  function rowQty(reg, row, project, depth) {
+    depth = depth || 0;
+    if (depth > 12) return NaN;
+    if (row.qtyFormula && String(row.qtyFormula).trim()[0] === "=") {
+      var v = evalSemanticExpr(row.qtyFormula, reg, row, project, depth + 1);
+      return isNaN(v) ? 0 : v;
+    }
+    return numOr0(row.qty);
+  }
+  function rowTotal(reg, row, project, depth) {
+    depth = depth || 0;
+    if (row.totalFormula && String(row.totalFormula).trim()[0] === "=") {
+      var v = evalSemanticExpr(row.totalFormula, reg, row, project, depth + 1);
+      return isNaN(v) ? 0 : round2(v);
+    }
+    return round2(rowQty(reg, row, project, depth) * numOr0(row.price));
+  }
+  function semanticTokenValue(tok, reg, row, project, depth) {
+    tok = String(tok || "").trim();
+    if (tok === "面积") return regSize(reg, "area");
+    if (tok === "周长") return regSize(reg, "perimeter");
+    if (tok === "房高" || tok === "层高") return regSize(reg, "height");
+    if (tok === "数量" || tok === "工程量") return rowQty(reg, row, project, depth);
+    if (tok === "单价") return numOr0(row.price);
+    if (tok === "合计") return rowTotal(reg, row, project, depth);
+    var m1 = tok.match(/^(.+)\.(面积|周长|房高|层高)$/);
+    if (m1) {
+      var r2 = findRegionByName(project, m1[1]);
+      var sk = m1[2] === "面积" ? "area" : m1[2] === "周长" ? "perimeter" : "height";
+      return r2 ? regSize(r2, sk) : NaN;
+    }
+    var m2 = tok.match(/^(.+)\.(.+)\.(数量|工程量|单价|合计)$/);
+    if (m2) {
+      var r3 = findRegionByName(project, m2[1]);
+      if (r3) {
+        var rr = findRowByItem(r3, m2[2]);
+        if (rr) {
+          var k = m2[3];
+          if (k === "数量" || k === "工程量") return rowQty(r3, rr, project, depth + 1);
+          if (k === "单价") return numOr0(rr.price);
+          if (k === "合计") return rowTotal(r3, rr, project, depth + 1);
+        }
+      }
+      return NaN;
+    }
+    return NaN;
+  }
+  function evalSemanticExpr(expr, reg, row, project, depth) {
+    depth = depth || 0;
+    if (depth > 14) return NaN;
+    var s = String(expr || "").trim();
+    if (!s) return NaN;
+    if (s[0] === "=") s = s.slice(1);
+    if (!s) return NaN;
+    s = s.replace(TOKEN_RE, function (tok) {
+      var v = semanticTokenValue(tok, reg, row, project, depth + 1);
+      return (v === null || v === undefined || isNaN(v)) ? "0" : String(v);
+    });
+    return safeArith(s);
+  }
+
+  /* ---------------- 公式语义化：Excel 引用 → 中文语义 ---------------- */
+  // refs: { heads:[{rowIdx,reg}], rows:[{rowIdx,reg,row}] }
+  function excelFormulaToSemantic(f, refs, curReg, selfRow) {
+    var s = String(f || "").trim();
+    if (s[0] === "=") s = s.slice(1);
+    if (!s) return "";
+    if (/^\d+(\.\d+)?$/.test(s.trim())) return "=" + s.trim();
+    s = s.replace(/([A-Za-z]+)(\d+)/g, function (m, col, rnum) {
+      var t = resolveCellRef(col.toUpperCase(), parseInt(rnum, 10), refs, curReg, selfRow);
+      return t || m;
+    });
+    return "=" + s;
+  }
+  function resolveCellRef(col, rNum, refs, curReg, selfRow) {
+    // Excel 公式行号是 1-based，refs 中 rowIdx 是 0-based 数组索引
+    var r0 = rNum - 1;
+    var sizeKey = null;
+    if (col === "H") sizeKey = "height";
+    else if (col === "J") sizeKey = "area";
+    else if (col === "L") sizeKey = "perimeter";
+    var rowKey = null;
+    if (col === "C") rowKey = "qty";
+    else if (col === "E") rowKey = "price";
+    else if (col === "F") rowKey = "total";
+    var h = null, rw = null;
+    for (var i = 0; i < refs.heads.length; i++) if (refs.heads[i].rowIdx === r0) h = refs.heads[i];
+    for (var j = 0; j < refs.rows.length; j++) if (refs.rows[j].rowIdx === r0) rw = refs.rows[j];
+    // 自身行兜底：解析期自身行尚未登记进 refs.rows，直接按行键映射
+    if (r0 === selfRow && rowKey) {
+      return rowKey === "qty" ? "数量" : (rowKey === "price" ? "单价" : "合计");
+    }
+    if (h && sizeKey) {
+      var tok = SIZE_TOKENS[sizeKey];
+      if (h.reg === curReg) return tok;
+      return String(h.reg.name || "区域") + "." + tok;
+    }
+    if (rw && rowKey) {
+      var kt = rowKey === "qty" ? "数量" : (rowKey === "price" ? "单价" : "合计");
+      if (rw.rowIdx === selfRow) return kt;
+      return String(rw.reg.name || "区域") + "." + String(rw.row.item || "项目") + "." + kt;
+    }
+    return null;
+  }
+
+  /* ---------------- 公式反序列化：中文语义 → Excel 引用 ---------------- */
+  // layout: { headRow:{regKey:r}, rowCell:{regKey_item:r}, curRowR, curHeadR }
+  function semanticToExcelFormula(expr, layout) {
+    var s = String(expr || "").trim();
+    if (!s) return "";
+    if (s[0] !== "=") return "";
+    s = s.slice(1);
+    s = s.replace(TOKEN_RE, function (tok) {
+      var key = lookupSemanticToken(tok, layout);
+      return key || tok;
+    });
+    return "=" + s;
+  }
+  function lookupSemanticToken(tok, layout) {
+    var t = String(tok || "").trim();
+    if (t === "面积") return layout.curHeadR ? "J" + layout.curHeadR : "";
+    if (t === "周长") return layout.curHeadR ? "L" + layout.curHeadR : "";
+    if (t === "房高" || t === "层高") return layout.curHeadR ? "H" + layout.curHeadR : "";
+    if (t === "数量" || t === "工程量") return layout.curRowR ? "C" + layout.curRowR : "";
+    if (t === "单价") return layout.curRowR ? "E" + layout.curRowR : "";
+    if (t === "合计") return layout.curRowR ? "F" + layout.curRowR : "";
+    var m1 = t.match(/^(.+)\.(面积|周长|房高|层高)$/);
+    if (m1) {
+      var h = layout.headRowByKey && layout.headRowByKey[m1[1]];
+      if (h) return (m1[2] === "面积" ? "J" : m1[2] === "周长" ? "L" : "H") + h;
+    }
+    var m2 = t.match(/^(.+)\.(.+)\.(数量|工程量|单价|合计)$/);
+    if (m2) {
+      var c = layout.rowCellByKey && layout.rowCellByKey[m2[1] + "|" + m2[2]];
+      if (c) return (m2[3] === "数量" || m2[3] === "工程量" ? "C" : m2[3] === "单价" ? "E" : "F") + c;
+    }
+    return "";
+  }
+
+  /* ---------------- 数据模型 ---------------- */
+  function blankProject(name) {
+    return {
+      name: name || "新项目",
+      client: "", address: "", quoteDate: "", remark: "",
+      lossRate: 0, mgmtRate: 0, taxRate: 0,
+      company: { name: "", address: "", site: "", phone: "" },
+      partitions: [{ name: "基础装修项目", collapsed: false, regions: [] }],
+      custom: blankCustom(),
+      water: blankWater()
+    };
+  }
+  function blankCustom() {
+    return {
+      custName: "", custPhone: "", brand: "", board: "", custAddress: "",
+      signDate: "", installDate: "", owner: "", ownerPhone: "",
+      signature: "", remark: "",
+      wardrobe: [], kitchen: []
+    };
+  }
+  function blankWater() {
+    return {
+      title: "水电价格表（合同附件）",
+      items: [], refs: [],
+      terms: "1、为了维护您的利益，请您不要接受任何口头承诺。\n2、实际发生项目若与报价不符，一切以实际项目发生为准。\n3、以上报价不含物业收取的装修管理费。\n4、物业收取的押金（可退）客户自理。\n5、增减项目的费用，在中期款时计算支付。\n6、水、电改造施工按实际发生计算，验收并付款。\n7、需乙方提供主材，另签代购协议。\n8、此报价不含税金。如需开发票，公司收取9%税金。"
+    };
+  }
+  function blankRegion(name) {
+    return { name: name || "新区域", height: "", area: "", perimeter: "", rows: [] };
+  }
+  function blankRow(item) {
+    return { item: item || "", qtyFormula: "", qty: "", unit: "", price: 0, totalFormula: "", note: "" };
+  }
+  // 旧模型（平铺 regions/rows）→ 新模型（partitions）
+  function migrateProject(p) {
+    if (!p) return p;
+    if (!p.partitions) {
+      var regions = p.regions || [];
+      var parts = [];
+      if (regions.length) {
+        parts.push({
+          name: "基础装修项目", collapsed: false,
+          regions: regions.map(function (reg) {
+            return {
+              name: reg.name || "未命名区域",
+              height: reg.height != null ? reg.height : "",
+              area: reg.area != null ? reg.area : "",
+              perimeter: reg.perimeter != null ? reg.perimeter : "",
+              rows: (reg.rows || []).map(legacyRowToNew)
+            };
+          })
+        });
+      } else {
+        parts.push({ name: "基础装修项目", collapsed: false, regions: [] });
+      }
+      p.partitions = parts;
+    }
+    p.partitions.forEach(function (pt) {
+      pt.collapsed = !!pt.collapsed;
+      (pt.regions || []).forEach(function (rg) {
+        rg.rows = rg.rows || [];
+      });
+    });
+    if (!p.custom) p.custom = blankCustom();
+    if (!p.water) p.water = blankWater();
+    if (!p.company) p.company = { name: "", address: "", site: "", phone: "" };
+    return p;
+  }
+  function legacyRowToNew(r) {
+    var parts = [];
+    if (r.material) parts.push("材料：" + r.material);
+    if (r.spec) parts.push("规格：" + r.spec);
+    if (r.labor) parts.push("人工费：" + r.labor);
+    if (r.note) parts.push(r.note);
+    return {
+      item: r.item || "", qtyFormula: "", qty: numOr0(r.qty), unit: r.unit || "",
+      price: numOr0(r.price), note: parts.join("；")
+    };
+  }
+
+  /* ---------------- 导入解析 ---------------- */
+  function sheetToRows(sheet) {
+    // 逐格遍历：保留公式串（cell.f），确保 =J8 / =C10*E10 等引用可被语义化
+    var range = XLSX.utils.decode_range(sheet["!ref"] || "A1");
+    var rows = [];
+    for (var R = range.s.r; R <= range.e.r; R++) {
+      var row = [];
+      for (var C = range.s.c; C <= range.e.c; C++) {
+        var addr = XLSX.utils.encode_cell({ r: R, c: C });
+        var cell = sheet[addr];
+        var v = "";
+        if (cell) {
+          if (cell.f) v = "=" + cell.f;
+          else v = cell.v;
+          if (v == null) v = "";
+        }
+        row.push(v);
+      }
+      rows.push(row);
+    }
+    return rows;
+  }
+  function detectDetailMode(data) {
+    for (var i = 0; i < data.length; i++) {
+      var joined = (data[i] || []).map(cellStr).join("|");
+      if (joined.indexOf("项目名称") < 0) continue;
+      if (joined.indexOf("材料名称") >= 0 || joined.indexOf("人工费") >= 0) return "old11";
+      return "new6";
+    }
+    return "new6";
+  }
+  function buildColMap(row) {
+    var map = { item: -1, qty: -1, unit: -1, price: -1, total: -1, note: -1, material: -1, spec: -1, labor: -1 };
+    for (var i = 0; i < row.length; i++) {
+      var h = cellStr(row[i]);
+      if (!h) continue;
+      if (/项目名称|工程项目|主材名称/.test(h) && map.item < 0) map.item = i;
+      else if (/工程量|数量/.test(h) && map.qty < 0) map.qty = i;
+      else if (h === "单位" && map.unit < 0) map.unit = i;
+      else if (/单价/.test(h) && map.price < 0) map.price = i;
+      else if (/合计|小计/.test(h) && map.total < 0) map.total = i;
+      else if (/施工|说明|工艺标准|备注/.test(h) && map.note < 0) map.note = i;
+      else if (/材料名称|材料/.test(h) && map.material < 0) map.material = i;
+      else if (/规格/.test(h) && map.spec < 0) map.spec = i;
+      else if (/人工费/.test(h) && map.labor < 0) map.labor = i;
+    }
+    if (map.item < 0) map.item = 1;
+    return map;
+  }
+  function parseInfoSheet(sheet, p) {
+    var data = sheetToRows(sheet);
+    for (var i = 0; i < data.length; i++) {
+      var infoRow = data[i] || [];
+      var k = cellStr(infoRow[0]).trim();
+      var v = infoRow[1];
+      if (k === "项目名称" && v) p.name = String(v);
+      else if (k === "客户" && v) p.client = String(v);
+      else if (k === "地址" && v) p.address = String(v);
+      else if (k === "报价日期" && v) p.quoteDate = String(v);
+      else if (k === "备注" && v) p.remark = String(v);
+      else if (k === "公司名称" && v) p.company.name = String(v);
+      else if (k === "公司地址" && v) p.company.address = String(v);
+      else if (k === "工程地点" && v) p.company.site = String(v);
+      else if (k === "联系电话" && v) p.company.phone = String(v);
+      else if (/损耗率/.test(k) && v) p.lossRate = numOr0(v);
+      else if (/管理费率/.test(k) && v) p.mgmtRate = numOr0(v);
+      else if (/税率/.test(k) && v) p.taxRate = numOr0(v);
+    }
+  }
+  function parseDetailSheet(sheet, p) {
+    var data = sheetToRows(sheet);
+    var mode = detectDetailMode(data);
+    if (mode === "old11") parseOldDetail(data, p);
+    else parseNewDetail(data, p);
+  }
+  function parseNewDetail(data, p) {
+    if (!p.partitions) p.partitions = [];
+    var curP = null, curR = null, colMap = null;
+    var refs = { heads: [], rows: [] };
+    var lastPartitionRow = false;
+    var seenCompanyName = false;
+    function ensurePart(name) {
+      // 仅复用空同名分区（默认预置），有内容同名分区各自独立（附件存在重复大分区名）
+      for (var i = 0; i < p.partitions.length; i++) {
+        if (p.partitions[i].name === name && (!p.partitions[i].regions || p.partitions[i].regions.length === 0)) return p.partitions[i];
+      }
+      var pt = { name: name, collapsed: false, regions: [] };
+      p.partitions.push(pt);
+      return pt;
+    }
+    function ensureRegion(name, height, area, perimeter) {
+      if (!curP) curP = ensurePart("基础装修项目");
+      var rg = blankRegion(name);
+      rg.height = height; rg.area = area; rg.perimeter = perimeter;
+      curP.regions.push(rg);
+      return rg;
+    }
+    function formulaVal(v) {
+      if (typeof v === "string" && v.trim()[0] === "=") {
+        return excelFormulaToSemantic(v, refs, curR, currentRowIdx);
+      }
+      return "";
+    }
+    var currentRowIdx = -1;
+    for (var r = 0; r < data.length; r++) {
+      var row = data[r] || [];
+      currentRowIdx = r;
+      var hasVal = false;
+      for (var k = 0; k < row.length; k++) if (row[k] !== "" && row[k] != null) { hasVal = true; break; }
+      if (!hasVal) { continue; }
+      var joined = row.map(cellStr).join("|");
+      var b1 = cellStr(row[1]).trim();
+      // 页眉公司信息（前 8 行）
+      if (r < 8) {
+        if (/公司地址/.test(b1)) { p.company.address = stripPrefix(b1, "公司地址"); continue; }
+        if (/工程地点/.test(b1)) { p.company.site = stripPrefix(b1, "工程地点"); continue; }
+        if (/联系电话|电话/.test(b1) && /：|:/.test(b1) && r < 8 && !/负责人/.test(b1)) { p.company.phone = stripPrefix(b1, "电话"); continue; }
+        if (b1 && !seenCompanyName && /装饰|装修|设计/.test(b1) && !/项目/.test(b1) && r < 8 && !/公司地址|工程地点|联系电话/.test(b1)) {
+          p.company.name = b1.replace(/[·—\-].*$/, "").trim();
+          seenCompanyName = true;
+          continue;
+        }
+      }
+      // 表头行
+      var isHeaderRow = (joined.indexOf("项目名称") >= 0 && (joined.indexOf("工程量") >= 0 || joined.indexOf("数量") >= 0)) ||
+                        (joined.indexOf("主材名称") >= 0 && joined.indexOf("数量") >= 0);
+      if (isHeaderRow) {
+        colMap = buildColMap(row);
+        if (!curR) {
+          var rn = curP && /主材|类目/.test(curP.name) ? "主材" : "未分区";
+          curR = ensureRegion(rn, "", "", "");
+        }
+        continue;
+      }
+      // 区域标题行（含尺寸标签）
+      if (joined.indexOf("房高") >= 0 || (joined.indexOf("面积") >= 0 && joined.indexOf("周长") >= 0)) {
+        var rh = parseRegionHeader(row, refs);
+        if (rh) {
+          if (rh.name && rh.name.indexOf("项目") >= 0) curP = ensurePart(rh.name);
+          curR = ensureRegion(rh.name || "未分区", rh.height, rh.area, rh.perimeter);
+          refs.heads.push({ rowIdx: r, reg: curR });
+          colMap = null;
+          lastPartitionRow = false;
+          continue;
+        }
+      }
+      // 无尺寸区域标题行（B 列文本 + G 列含施工/工艺表头）
+      if (b1 && !/^[\d.]+$/.test(b1) && joined.indexOf("项目名称") < 0) {
+        var g6 = cellStr(row[6]);
+        if (/施工位置|施工说明|工艺标准/.test(g6)) {
+          if (b1.indexOf("项目") >= 0) curP = ensurePart(b1);
+          curR = ensureRegion(b1, "", "", "");
+          refs.heads.push({ rowIdx: r, reg: curR });
+          colMap = null;
+          lastPartitionRow = false;
+          continue;
+        }
+      }
+      // 汇总/签字/条款行：先于分区判定，避免被误识别为分区
+      if (/^(小计|.*合计|.*总价|甲方签字|乙方签字|附件信息|客户确认|尊敬的客户)/.test(b1) || /^[0-9]+、/.test(b1)) continue;
+      // 分区标题行
+      if (b1 && !/^[\d.]+$/.test(b1)) {
+        var nonEmpty = row.filter(function (c) { return c !== "" && c != null; }).length;
+        if (nonEmpty <= 2 || /主材|类目/.test(b1)) {
+          if (b1 === "主材") { continue; }
+          if (lastPartitionRow && curP && curP.regions.length === 0) { continue; }
+          curP = ensurePart(b1);
+          curR = null;
+          colMap = null;
+          lastPartitionRow = true;
+          continue;
+        }
+      }
+      lastPartitionRow = false;
+      // 明细行
+      if (colMap && curR) {
+        var item = colMap.item >= 0 ? cellStr(row[colMap.item]).trim() : "";
+        var qtyV = colMap.qty >= 0 ? row[colMap.qty] : "";
+        if (item || (qtyV !== "" && qtyV != null)) {
+          var isF = typeof qtyV === "string" && qtyV.trim()[0] === "=";
+          var totalV = colMap.total >= 0 ? row[colMap.total] : "";
+          var isTotalF = typeof totalV === "string" && totalV.trim()[0] === "=";
+          var rowObj = {
+            item: item,
+            qtyFormula: isF ? formulaVal(qtyV) : "",
+            qty: isF ? "" : numOr0(qtyV),
+            unit: colMap.unit >= 0 ? cellStr(row[colMap.unit]) : "",
+            price: colMap.price >= 0 ? numOr0(row[colMap.price]) : 0,
+            totalFormula: isTotalF ? formulaVal(totalV) : "",
+            note: colMap.note >= 0 ? cellStr(row[colMap.note]) : ""
+          };
+          curR.rows.push(rowObj);
+          refs.rows.push({ rowIdx: r, reg: curR, row: rowObj });
+        }
+      }
+    }
+  }
+  function resolveSizeValue(v, refs) {
+    var s = String(v).trim();
+    if (!s) return "";
+    if (s[0] !== "=") {
+      var n = parseFloat(s);
+      return isNaN(n) ? s : n;
+    }
+    s = s.slice(1).trim();
+    var m = s.match(/^([A-Za-z]+)(\d+)$/);
+    if (m) {
+      var col = m[1].toUpperCase();
+      var rNum = parseInt(m[2], 10);
+      var r0 = rNum - 1;
+      var key = col === "H" ? "height" : col === "J" ? "area" : col === "L" ? "perimeter" : null;
+      if (key) {
+        for (var i = 0; i < refs.heads.length; i++) {
+          if (refs.heads[i].rowIdx === r0) {
+            var n = regSize(refs.heads[i].reg, key);
+            return isFinite(n) ? n : "";
+          }
+        }
+      }
+      return "";
+    }
+    var n = safeArith(s);
+    return isNaN(n) ? "" : n;
+  }
+  function parseRegionHeader(row, refs) {
+    var name = cellStr(row[1]).trim();
+    var height = "", area = "", perimeter = "";
+    var inKey = null;
+    for (var i = 2; i < row.length; i++) {
+      var v = row[i];
+      var s = cellStr(v).trim();
+      if (/房高/.test(s)) inKey = "height";
+      else if (/面积/.test(s)) inKey = "area";
+      else if (/周长/.test(s)) inKey = "perimeter";
+      else if (s !== "" && inKey) {
+        if (inKey === "height") height = resolveSizeValue(v, refs);
+        if (inKey === "area") area = resolveSizeValue(v, refs);
+        if (inKey === "perimeter") perimeter = resolveSizeValue(v, refs);
+        inKey = null;
+      }
+    }
+    return { name: name, height: height, area: area, perimeter: perimeter };
+  }
+  function parseOldDetail(data, p) {
+    // 旧 11 列格式：区域标题行（装修区域：|区域名|面积：|值|周长：|值|层高：|值）+ 明细
+    if (!p.partitions) p.partitions = [];
+    var curP = null, curR = null, colMap = null;
+    for (var r = 0; r < data.length; r++) {
+      var row = data[r] || [];
+      var joined = row.map(cellStr).join("|");
+      if (joined.indexOf("装修区域") >= 0 || joined.indexOf("区域名") >= 0 || joined.indexOf("面积：") >= 0) {
+        var name = "", area = "", perimeter = "", height = "";
+        for (var i = 0; i < row.length; i++) {
+          var s = cellStr(row[i]).trim();
+          if (/区域名|装修区域/.test(s) && i + 1 < row.length) name = cellStr(row[i + 1]).trim();
+          if (/面积：/.test(s) && i + 1 < row.length) area = row[i + 1];
+          if (/周长：/.test(s) && i + 1 < row.length) perimeter = row[i + 1];
+          if (/层高：/.test(s) && i + 1 < row.length) height = row[i + 1];
+        }
+        if (!curP) {
+          curP = null;
+          for (var pi0 = 0; pi0 < p.partitions.length; pi0++) {
+            if (p.partitions[pi0].name === "基础装修项目") { curP = p.partitions[pi0]; break; }
+          }
+          if (!curP) { curP = { name: "基础装修项目", collapsed: false, regions: [] }; p.partitions.push(curP); }
+        }
+        curR = blankRegion(name || "未分区");
+        curR.area = area; curR.perimeter = perimeter; curR.height = height;
+        curP.regions.push(curR);
+        colMap = null;
+        continue;
+      }
+      if (joined.indexOf("项目名称") >= 0 && joined.indexOf("序号") >= 0) { colMap = buildColMap(row); continue; }
+      if (/^(小计|全屋总计)/.test(cellStr(row[0]).trim())) continue;
+      if (colMap && curR) {
+        var item = colMap.item >= 0 ? cellStr(row[colMap.item]).trim() : "";
+        var qtyV = colMap.qty >= 0 ? row[colMap.qty] : "";
+        if (item || (qtyV !== "" && qtyV != null)) {
+          curR.rows.push({
+            item: item, qtyFormula: "", qty: numOr0(qtyV),
+            unit: colMap.unit >= 0 ? cellStr(row[colMap.unit]) : "",
+            price: colMap.price >= 0 ? numOr0(row[colMap.price]) : 0,
+            note: [colMap.material >= 0 ? "材料：" + cellStr(row[colMap.material]) : "",
+                   colMap.spec >= 0 ? "规格：" + cellStr(row[colMap.spec]) : "",
+                   colMap.labor >= 0 ? "人工费：" + cellStr(row[colMap.labor]) : "",
+                   colMap.note >= 0 ? cellStr(row[colMap.note]) : ""].filter(Boolean).join("；")
+          });
+        }
+      }
+    }
+  }
+  function parseCustomSheet(sheet, p) {
+    var data = sheetToRows(sheet);
+    var c = p.custom = p.custom || blankCustom();
+    c.wardrobe = []; c.kitchen = [];
+    var phase = "info";
+    for (var r = 0; r < data.length; r++) {
+      var row = data[r] || [];
+      var joined = row.map(cellStr).join("|");
+      var a0 = cellStr(row[0]).trim();
+      if (phase === "info") {
+        // 整行键值对扫描：兼容纵向模板布局（键在首列、值在次列）与横向导出布局（行内多个“键|值”对）
+        for (var j = 0; j < row.length - 1; j++) {
+          var key = cellStr(row[j]).trim();
+          if (!key) continue;
+          var val = cellStr(row[j + 1]);
+          if (!val || !val.trim()) continue;
+          if (key === "客户姓名") c.custName = val;
+          else if (key === "客户电话") c.custPhone = val;
+          else if (key === "客户地址") c.custAddress = val;
+          else if (key === "负责人") c.owner = val;
+          else if (key === "电话") c.ownerPhone = val;
+          else if (key === "品牌及类型" || key.indexOf("品牌") >= 0) c.brand = val;
+          else if (key === "板材级别" || key.indexOf("板材") >= 0) c.board = val;
+          else if (key === "签订日期") c.signDate = val;
+          else if (key === "安装日期") c.installDate = val;
+        }
+        if (/全屋定制部分/.test(a0)) phase = "data";
+        continue;
+      }
+      if (phase === "data") {
+        if (/总价/.test(joined) || /签字/.test(joined) || /备注/.test(a0) && /：/.test(a0)) {
+          if (/签字/.test(a0)) c.signature = stripPrefix(joined.replace(/.*客户确认签字[：:]?/, ""), "");
+          if (/备注/.test(a0)) c.remark = stripPrefix(a0, "备注");
+          continue;
+        }
+        // 跳过表头行（项目名称/序号）：左栏 C 列、右栏 K 列
+        if (cellStr(row[2]).trim() === "项目名称" || cellStr(row[10]).trim() === "项目名称") continue;
+        // 全屋左栏（C项目名称|D数量|E空|F单位|G单价|H小计）
+        var wItem = row[2] ? cellStr(row[2]).trim() : "";
+        var kItem = row[10] ? cellStr(row[10]).trim() : "";
+        if (wItem && !/总价/.test(joined)) {
+          var wT = row[7];
+          if (typeof wT === "string" && wT.trim()[0] === "=") wT = numOr0(row[6]) * numOr0(row[3]);
+          if (wT === "" || wT == null) wT = "";
+          c.wardrobe.push({
+            item: wItem, qty: numOr0(row[3]), unit: cellStr(row[5]),
+            price: numOr0(row[6]), total: (wT === "" ? "" : numOr0(wT))
+          });
+        }
+        if (kItem && !/总价/.test(joined)) {
+          // 右栏（J序号|K项目名称|L空|M数量|N单位|O单价|P小计）
+          var kT = row[15];
+          if (typeof kT === "string" && kT.trim()[0] === "=") kT = numOr0(row[14]) * numOr0(row[12]);
+          if (kT === "" || kT == null) kT = "";
+          c.kitchen.push({
+            item: kItem, qty: numOr0(row[12]), unit: cellStr(row[13]),
+            price: numOr0(row[14]), total: (kT === "" ? "" : numOr0(kT))
+          });
+        }
+        if (a0 === "备注：") c.remark = stripPrefix(a0, "备注");
+      }
+    }
+  }
+  function parseWaterSheet(sheet, p) {
+    var data = sheetToRows(sheet);
+    var w = p.water = p.water || blankWater();
+    w.items = []; w.refs = []; w.terms = "";
+    var phase = "title";
+    var terms = [];
+    for (var r = 0; r < data.length; r++) {
+      var row = data[r] || [];
+      var a0 = cellStr(row[0]).trim();
+      var joined = row.map(cellStr).join("|");
+      if (/水电价格表|价格表/.test(a0)) { w.title = a0; continue; }
+      if (/现场.*工程量/.test(a0)) { phase = "items"; continue; }
+      if (/单项报价参考/.test(a0)) { phase = "refs"; continue; }
+      if (/服务条款/.test(a0)) { phase = "terms"; continue; }
+      if (phase === "items") {
+        if (/序号/.test(joined) && /工程项目|项目名称/.test(joined)) continue;
+        var b1 = cellStr(row[1]).trim();
+        if (b1 && !/合计/.test(b1) && !/^[0-9]+、/.test(b1)) {
+          w.items.push({
+            item: b1, qty: numOr0(row[2]), unit: cellStr(row[3]),
+            price: numOr0(row[4]), subtotal: numOr0(row[5]), note: cellStr(row[6])
+          });
+        }
+        continue;
+      }
+      if (phase === "refs") {
+        if (/序号/.test(joined) && /单价/.test(joined)) continue;
+        var b2 = cellStr(row[1]).trim();
+        if (b2 && !/^[0-9]+、/.test(b2)) {
+          w.refs.push({ item: b2, qty: numOr0(row[2]), unit: cellStr(row[3]), price: numOr0(row[4]), note: cellStr(row[5]) });
+        }
+        continue;
+      }
+      if (phase === "terms") {
+        if (a0) terms.push(a0);
+        else if (joined && joined.trim()) terms.push(joined.trim());
+      }
+    }
+    if (terms.length) w.terms = terms.join("\n");
+  }
+  function parseWorkbook(wb, p) {
+    var names = wb.SheetNames || [];
+    var infoIdx = -1, detailIdx = -1, customIdx = -1, waterIdx = -1;
+    names.forEach(function (n, i) {
+      if (/项目|信息/.test(n) && infoIdx < 0) infoIdx = i;
+      if (/明细|报价|清单/.test(n) && detailIdx < 0) detailIdx = i;
+      if (/定制/.test(n) && customIdx < 0) customIdx = i;
+      if (/水电/.test(n) && waterIdx < 0) waterIdx = i;
+    });
+    if (infoIdx >= 0) parseInfoSheet(wb.Sheets[names[infoIdx]], p);
+    if (detailIdx >= 0) parseDetailSheet(wb.Sheets[names[detailIdx]], p);
+    if (customIdx >= 0) parseCustomSheet(wb.Sheets[names[customIdx]], p);
+    if (waterIdx >= 0) parseWaterSheet(wb.Sheets[names[waterIdx]], p);
+    if (!p.partitions || !p.partitions.length) p.partitions = [{ name: "基础装修项目", collapsed: false, regions: [] }];
+    p.partitions.forEach(function (pt) {
+      if (!pt.regions) pt.regions = [];
+      pt.regions.forEach(function (rg) { if (!rg.rows) rg.rows = []; });
+    });
+    // 清理导入后的空默认分区（保留全新空项目）
+    var anyRegion = false;
+    p.partitions.forEach(function (pt) { if ((pt.regions || []).length > 0) anyRegion = true; });
+    if (anyRegion) {
+      p.partitions = p.partitions.filter(function (pt) {
+        return !(pt.name === "基础装修项目" && (!pt.regions || !pt.regions.length));
+      });
+      if (!p.partitions.length) p.partitions = [{ name: "基础装修项目", collapsed: false, regions: [] }];
+    }
+    return p;
+  }
+
+  /* ---------------- 汇总计算 ---------------- */
+  function regionTotal(rg, project) {
+    var sum = 0;
+    (rg.rows || []).forEach(function (rw) { sum += rowTotal(rg, rw, project); });
+    return round2(sum);
+  }
+  function partitionTotal(pt, project) {
+    var sum = 0;
+    (pt.regions || []).forEach(function (rg) { sum += regionTotal(rg, project); });
+    return round2(sum);
+  }
+  function projectDetailTotal(project) {
+    var sum = 0;
+    (project.partitions || []).forEach(function (pt) { sum += partitionTotal(pt, project); });
+    return round2(sum);
+  }
+  function customRowTotal(r) {
+    var t = parseFloat(r.total);
+    return isFinite(t) ? t : (numOr0(r.qty) * numOr0(r.price));
+  }
+  function customTotals(project) {
+    var c = project.custom || blankCustom();
+    var w = 0, k = 0;
+    (c.wardrobe || []).forEach(function (r) { w += customRowTotal(r); });
+    (c.kitchen || []).forEach(function (r) { k += customRowTotal(r); });
+    return { wardrobe: round2(w), kitchen: round2(k), total: round2(w + k) };
+  }
+  function waterTotal(project) {
+    var w = project.water || blankWater();
+    var sum = 0;
+    (w.items || []).forEach(function (r) { sum += (r.subtotal != null && r.subtotal !== "") ? numOr0(r.subtotal) : (numOr0(r.qty) * numOr0(r.price)); });
+    return round2(sum);
+  }
+  function calcFees(project) {
+    var base = projectDetailTotal(project);
+    var loss = round2(base * numOr0(project.lossRate) / 100);
+    var mgmtBase = base + loss;
+    var mgmt = round2(mgmtBase * numOr0(project.mgmtRate) / 100);
+    var taxBase = mgmtBase + mgmt;
+    var tax = round2(taxBase * numOr0(project.taxRate) / 100);
+    var grand = round2(base + loss + mgmt + tax);
+    return { base: base, loss: loss, mgmt: mgmt, tax: tax, grand: grand };
+  }
+  function calcAllRegions(project) {
+    var list = [];
+    (project.partitions || []).forEach(function (pt, pi) {
+      (pt.regions || []).forEach(function (rg, ri) {
+        var total = regionTotal(rg, project);
+        var qtySum = 0;
+        (rg.rows || []).forEach(function (rw) { qtySum += rowQty(rg, rw, project); });
+        list.push({
+          pi: pi, ri: ri, partition: pt.name, region: rg.name || "未命名",
+          height: regSize(rg, "height"), area: regSize(rg, "area"), perimeter: regSize(rg, "perimeter"),
+          rows: (rg.rows || []).length, total: total, qtySum: round2(qtySum)
+        });
+      });
+    });
+    return list;
+  }
+
+  /* ---------------- 导出 Excel ---------------- */
+  function styleObject(style) {
+    if (!style) return null;
+    return {
+      font: { name: "微软雅黑", sz: style.sz || 10, bold: !!style.bold, color: style.color || { rgb: "000000" } },
+      alignment: { horizontal: style.h || "center", vertical: "center", wrapText: !!style.wrap },
+      fill: style.fill ? { fgColor: { rgb: style.fill }, patternType: "solid" } : undefined,
+      border: { top: { style: "thin", color: { rgb: "8EAADB" } }, bottom: { style: "thin", color: { rgb: "8EAADB" } }, left: { style: "thin", color: { rgb: "8EAADB" } }, right: { style: "thin", color: { rgb: "8EAADB" } } }
+    };
+  }
+  function buildExportWorkbook(project) {
+    var wb = new ExcelJS.Workbook();
+    var company = project.company || {};
+    var thin = { style: "thin" };
+    function border(edge) { var b = {}; ["top","left","bottom","right"].forEach(function(k){ b[k] = edge ? thin : { style: "hair" }; }); return b; }
+    function ec(ws, r, c, v, o) {
+      var cell = ws.getCell(r, c);
+      cell.value = (v === null || v === undefined) ? "" : v;
+      if (!o) return cell;
+      if (o.font) cell.font = o.font;
+      if (o.fill) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: o.fill } };
+      if (o.align) cell.alignment = o.align;
+      if (o.numFmt) cell.numFmt = o.numFmt;
+      if (o.border) cell.border = border(o.border);
+      return cell;
+    }
+    function cellFont(bold, size) { return { name: "微软雅黑", size: size || 11, bold: !!bold }; }
+    function rightNum() { return { horizontal: "right", vertical: "middle" }; }
+    function center() { return { horizontal: "center", vertical: "middle" }; }
+    var MONEY = "#,##0.00";
+    var MONEYQ = "0.00";
+
+    // ---------- 1. 项目信息 ----------
+    var ws1 = wb.addWorksheet("项目信息");
+    ws1.columns = [{ width: 16 }, { width: 46 }];
+    var infoAoa = [
+      ["项目名称", project.name || ""],
+      ["客户", project.client || ""],
+      ["地址", project.address || ""],
+      ["报价日期", project.quoteDate || ""],
+      ["备注", project.remark || ""],
+      ["公司名称", company.name || ""],
+      ["公司地址", company.address || ""],
+      ["工程地点", company.site || ""],
+      ["联系电话", company.phone || ""],
+      ["材料损耗率(%)", numOr0(project.lossRate)],
+      ["管理费率(%)", numOr0(project.mgmtRate)],
+      ["税率(%)", numOr0(project.taxRate)]
+    ];
+    infoAoa.forEach(function (arr, i) {
+      ws1.addRow(arr);
+      var r0 = i + 1;
+      ec(ws1, r0, 1, arr[0], { font: cellFont(true), border: true });
+      var v = arr[1];
+      var isNum = (typeof v === "number");
+      ec(ws1, r0, 2, v, { font: cellFont(false), align: isNum ? rightNum() : undefined, numFmt: isNum ? MONEYQ : undefined, border: true });
+    });
+    ws1.getRow(1).height = 22;
+    // A14 AI 备注行（与模板/build_template.py 保持一致）
+    ec(ws1, 14, 1, "（内容由AI生成，仅供参考）", { font: cellFont(false), border: true });
+
+    // ---------- 2. 家装报价明细 ----------
+    var ws = wb.addWorksheet("家装报价明细");
+    ws.columns = [{ width: 5 }, { width: 26 }, { width: 11 }, { width: 8 }, { width: 10 }, { width: 12 }, { width: 20 }, { width: 12 }, { width: 20 }, { width: 12 }, { width: 20 }, { width: 12 }];
+    var r = 1;
+    ws.getRow(r).height = 6; r++;
+    // 页眉：公司名
+    if (company.name) {
+      ec(ws, r, 2, company.name, { font: cellFont(true, 16), fill: "FFF5E6C8", align: center() });
+      ws.mergeCells(r, 2, r, 12);
+      ws.getRow(r).height = 28; r++;
+    }
+    if (company.address) { ec(ws, r, 2, "公司地址：" + company.address, { font: cellFont(false, 10), align: center() }); ws.mergeCells(r, 2, r, 12); ws.getRow(r).height = 18; r++; }
+    if (company.site) { ec(ws, r, 2, "工程地点：" + company.site, { font: cellFont(false, 10), align: center() }); ws.mergeCells(r, 2, r, 12); ws.getRow(r).height = 18; r++; }
+    if (company.phone) { ec(ws, r, 2, "联系电话：" + company.phone, { font: cellFont(false, 10), align: center() }); ws.mergeCells(r, 2, r, 12); ws.getRow(r).height = 18; r++; }
+    ws.getRow(r).height = 6; r++;
+    // 分区/区域
+    (project.partitions || []).forEach(function (pt) {
+      ec(ws, r, 1, pt.name || "未命名分区", { font: cellFont(true), fill: "FFD9E2F3", align: center() });
+      ws.mergeCells(r, 1, r, 12);
+      ws.getRow(r).height = 22; r++;
+      (pt.regions || []).forEach(function (rg) {
+        // 区域标题行
+        ec(ws, r, 1, rg.name || "未命名区域", { font: cellFont(true), fill: "FFEDEDED" });
+        ws.mergeCells(r, 1, r, 6);
+        ec(ws, r, 7, "房高（米）", { font: cellFont(true, 10), fill: "FFEDEDED", align: center() });
+        ec(ws, r, 8, numOr0(regSize(rg, "height")), { font: cellFont(false, 10), fill: "FFEDEDED", align: rightNum() });
+        ec(ws, r, 9, "面积（平米）", { font: cellFont(true, 10), fill: "FFEDEDED", align: center() });
+        ec(ws, r, 10, numOr0(regSize(rg, "area")), { font: cellFont(false, 10), fill: "FFEDEDED", align: rightNum() });
+        ec(ws, r, 11, "周长（米）", { font: cellFont(true, 10), fill: "FFEDEDED", align: center() });
+        ec(ws, r, 12, numOr0(regSize(rg, "perimeter")), { font: cellFont(false, 10), fill: "FFEDEDED", align: rightNum() });
+        ws.getRow(r).height = 20; r++;
+        // 表头行
+        var heads = ["序号", "项目名称", "工程量", "单位", "单价（元）", "合计（元）", "施工位置、辅料品牌、尺寸、工艺标准", "", "", "", "", ""];
+        heads.forEach(function (h, ci) {
+          if (ci < 7) ec(ws, r, ci + 1, h, { font: cellFont(true), fill: "FFF0F0F0", align: center(), border: true });
+        });
+        ws.mergeCells(r, 7, r, 12);
+        ws.getRow(r).height = 20; r++;
+        // 明细行（纯文本/数字，无公式）
+        (rg.rows || []).forEach(function (rw, rwIdx) {
+          var qtyV = rowQty(rg, rw, project);
+          var totV = rowTotal(rg, rw, project);
+          ec(ws, r, 1, rwIdx + 1, { border: true, align: center() });
+          ec(ws, r, 2, rw.item || "", { border: true });
+          ec(ws, r, 3, (isNaN(qtyV) ? 0 : round2(qtyV)), { border: true, align: rightNum(), numFmt: MONEYQ });
+          ec(ws, r, 4, rw.unit || "", { border: true, align: center() });
+          ec(ws, r, 5, numOr0(rw.price), { border: true, align: rightNum(), numFmt: MONEY });
+          ec(ws, r, 6, (isNaN(totV) ? 0 : totV), { border: true, align: rightNum(), numFmt: MONEY });
+          ec(ws, r, 7, rw.note || "", { border: true });
+          ws.mergeCells(r, 7, r, 12);
+          ws.getRow(r).height = (rw.note && rw.note.length > 30) ? 30 : 20;
+          r++;
+        });
+        // 小计行
+        ec(ws, r, 1, "小计（元）", { font: cellFont(true), fill: "FFF5F5F5" });
+        ws.mergeCells(r, 1, r, 5);
+        ec(ws, r, 6, regionTotal(rg, project), { font: cellFont(true), fill: "FFF5F5F5", align: rightNum(), numFmt: MONEY });
+        ws.mergeCells(r, 7, r, 12);
+        ws.getRow(r).height = 20; r++;
+      });
+      // 分区合计
+      ec(ws, r, 1, pt.name + "合计（元）", { font: cellFont(true), fill: "FFEAF0FB" });
+      ws.mergeCells(r, 1, r, 5);
+      ec(ws, r, 6, partitionTotal(pt, project), { font: cellFont(true), fill: "FFEAF0FB", align: rightNum(), numFmt: MONEY });
+      ws.mergeCells(r, 7, r, 12);
+      ws.getRow(r).height = 20; r++;
+    });
+    // 工程总价
+    ec(ws, r, 1, "工程总价（元）", { font: cellFont(true), fill: "FFD9E2F3" });
+    ws.mergeCells(r, 1, r, 5);
+    ec(ws, r, 6, projectDetailTotal(project), { font: cellFont(true), fill: "FFD9E2F3", align: rightNum(), numFmt: MONEY });
+    ws.mergeCells(r, 7, r, 12);
+    ws.getRow(r).height = 22; r++;
+    // 最终总价（含定制）
+    var ct = customTotals(project);
+    ec(ws, r, 1, "最终总价（元）（含定制）", { font: cellFont(true), fill: "FFF7E6C8" });
+    ws.mergeCells(r, 1, r, 5);
+    ec(ws, r, 6, round2(projectDetailTotal(project) + ct.total), { font: cellFont(true), fill: "FFF7E6C8", align: rightNum(), numFmt: MONEY });
+    ws.mergeCells(r, 7, r, 12);
+    ws.getRow(r).height = 22;
+
+    // ---------- 3. 定制明细 ----------
+    var cws = wb.addWorksheet("定制明细");
+    cws.columns = [{ width: 16 }, { width: 6 }, { width: 16 }, { width: 8 }, { width: 8 }, { width: 10 }, { width: 10 }, { width: 4 }, { width: 6 }, { width: 16 }, { width: 8 }, { width: 8 }, { width: 10 }, { width: 10 }, { width: 8 }];
+    ec(cws, 1, 1, "全屋定制报价明细", { font: cellFont(true, 14), align: center() });
+    cws.mergeCells(1, 1, 1, 15);
+    cws.getRow(1).height = 26;
+    function cRow(arr, isHead) {
+      cws.addRow(arr);
+      var rr = cws.rowCount;
+      arr.forEach(function (vv, ci) {
+        if (vv === "") return;
+        ec(cws, rr, ci + 1, vv, isHead ? { font: cellFont(true), fill: "FFF0F0F0", align: center(), border: true } : { font: cellFont(false), border: true });
+      });
+      return rr;
+    }
+    cRow(["客户姓名", cField(project, "custName"), "客户电话", cField(project, "custPhone"), "品牌及类型", cField(project, "brand"), "板材级别", cField(project, "board"), "", "", "", "", "", "", ""]);
+    cRow(["客户地址", cField(project, "custAddress"), "", "", "签订日期", cField(project, "signDate"), "安装日期", cField(project, "installDate"), "", "", "", "", "", "", ""]);
+    cRow(["负责人", cField(project, "owner"), "电话", cField(project, "ownerPhone"), "", "", "", "", "", "", "", "", "", "", ""]);
+    cRow(["品类明细", "", "全屋定制", "", "五金", "", "", "", "橱柜", "台面", "", "", "", "", ""], true);
+    cRow(["", "", "门板", "", "滑轨", "", "玻璃门", "", "", "门板", "", "", "", "", ""], true);
+    cRow(["", "", "层板", "", "拉手", "", "水槽", "", "", "柜体", "", "", "", "", ""], true);
+    cRow(["", "", "背板", "", "拉直器", "", "灯线", "", "", "背板", "", "", "", "", ""], true);
+    var partR = cRow(["全屋定制部分", "", "", "", "", "", "", "", "橱柜定制部分"], true);
+    cws.mergeCells(partR, 1, partR, 8);
+    cws.mergeCells(partR, 9, partR, 15);
+    var cHeadR = cws.rowCount + 1;
+    // 表头与模板一致：左栏 C项目名称|D数量|E空|F单位|G单价|H小计；右栏 J序号|K项目名称|L空|M数量|N单位|O单价|P小计
+    cRow(["项目", "序号", "项目名称", "数量", "", "单位", "单价（元）", "小计（元）", "", "序号", "项目名称", "", "数量", "单位", "单价（元）", "小计（元）"], true);
+    var maxLen = Math.max((project.custom.wardrobe || []).length, (project.custom.kitchen || []).length);
+    for (var ci = 0; ci < maxLen; ci++) {
+      var w = (project.custom.wardrobe || [])[ci] || null;
+      var k = (project.custom.kitchen || [])[ci] || null;
+      cws.addRow([
+        "", w ? ci + 1 : "", w ? w.item : "", w ? numOr0(w.qty) : "", "",
+        w ? w.unit : "", w ? numOr0(w.price) : "", w ? round2(customRowTotal(w)) : "",
+        "", k ? ci + 1 : "", k ? k.item : "", "", k ? numOr0(k.qty) : "", k ? k.unit : "",
+        k ? numOr0(k.price) : "", k ? round2(customRowTotal(k)) : ""
+      ]);
+      var rr = cws.rowCount;
+      [2, 3, 4, 6, 7, 8, 10, 11, 13, 14, 15, 16].forEach(function (c2) { ec(cws, rr, c2, cws.getCell(rr, c2).value, { border: true }); });
+      [7, 8, 15, 16].forEach(function (c2) { var cc = cws.getCell(rr, c2); if (typeof cc.value === "number") { cc.numFmt = MONEY; cc.alignment = rightNum(); } });
+    }
+    var ct2 = customTotals(project);
+    cRow(["全屋定制总价（元）", "", "", ct2.wardrobe, "", "", "", "橱柜定制总价（元）", "", "", ct2.kitchen, "", "", "", "", ""], true);
+    cRow(["定制及橱柜合计总价（元）", "", "", ct2.total, "", "", "", "", "", "最终总价（元）", ct2.total, "", "", "", "", ""], true);
+    cRow(["客户确认签字：" + cField(project, "signature")]);
+    cRow(["备注：" + cField(project, "remark")]);
+
+    // ---------- 4. 水电明细 ----------
+    var wws = wb.addWorksheet("水电明细");
+    wws.columns = [{ width: 6 }, { width: 26 }, { width: 10 }, { width: 8 }, { width: 8 }, { width: 10 }, { width: 50 }];
+    ec(wws, 1, 1, company.name || "水电价格表（合同附件）", { font: cellFont(true, 14), align: center() });
+    wws.mergeCells(1, 1, 1, 7);
+    wws.getRow(1).height = 24;
+    ec(wws, 2, 1, "现场水电项目工程量明细", { font: cellFont(true, 12) });
+    wws.mergeCells(2, 1, 2, 7);
+    var wHead = ["序号", "工程项目名称", "工程量", "单位", "单价", "小计", "备注"];
+    wws.addRow(wHead);
+    var wHeadR = wws.rowCount;
+    wHead.forEach(function (h, ci) { ec(wws, wHeadR, ci + 1, h, { font: cellFont(true), fill: "FFF0F0F0", align: center(), border: true }); });
+    (project.water.items || []).forEach(function (it, idx) {
+      var subtotal = numOr0(it.qty) * numOr0(it.price);
+      wws.addRow([idx + 1, it.item, numOr0(it.qty), it.unit, numOr0(it.price), subtotal, it.note || ""]);
+      var rr = wws.rowCount;
+      [1, 2, 3, 4, 5, 6, 7].forEach(function (c2) { ec(wws, rr, c2, wws.getCell(rr, c2).value, { border: true }); });
+      [3, 5, 6].forEach(function (c2) { var cc = wws.getCell(rr, c2); cc.numFmt = MONEY; cc.alignment = rightNum(); });
+      var wu = wws.getCell(rr, 4);
+      wu.dataValidation = { type: "list", allowBlank: true, formulae: ['"' + UNIT_PRESETS.join(",") + '"'] };
+    });
+    wws.addRow(["合计", "", "", "", "", waterTotal(project), ""]);
+    var wr = wws.rowCount;
+    ec(wws, wr, 1, "合计", { font: cellFont(true), fill: "FFF5F5F5" });
+    ec(wws, wr, 6, waterTotal(project), { font: cellFont(true), fill: "FFF5F5F5", align: rightNum(), numFmt: MONEY });
+    wws.addRow(["单项报价参考"]);
+    ec(wws, wws.rowCount, 1, "单项报价参考", { font: cellFont(true) });
+    var wr2 = wws.rowCount;
+    wws.addRow(["序号", "项目名称", "工程量", "单位", "单价", "备注"]);
+    var wr3 = wws.rowCount;
+    ["序号", "项目名称", "工程量", "单位", "单价", "备注"].forEach(function (h, ci) { ec(wws, wr3, ci + 1, h, { font: cellFont(true), fill: "FFF0F0F0", align: center(), border: true }); });
+    (project.water.refs || []).forEach(function (rf, idx) {
+      wws.addRow([idx + 1, rf.item, numOr0(rf.qty), rf.unit, numOr0(rf.price), rf.note || ""]);
+      var rr = wws.rowCount;
+      [1, 2, 3, 4, 5, 6].forEach(function (c2) { ec(wws, rr, c2, wws.getCell(rr, c2).value, { border: true }); });
+      [3, 5].forEach(function (c2) { var cc = wws.getCell(rr, c2); cc.numFmt = MONEY; cc.alignment = rightNum(); });
+      var ru = wws.getCell(rr, 4);
+      ru.dataValidation = { type: "list", allowBlank: true, formulae: ['"' + UNIT_PRESETS.join(",") + '"'] };
+    });
+    wws.addRow(["服务条款"]);
+    ec(wws, wws.rowCount, 1, "服务条款", { font: cellFont(true) });
+    String(project.water.terms || "").split("\n").forEach(function (line) { if (line.trim()) wws.addRow([line.trim()]); });
+
+    // ---------- 5. 报价汇总 ----------
+    var sws = wb.addWorksheet("报价汇总");
+    sws.columns = [{ width: 26 }, { width: 8 }, { width: 8 }, { width: 12 }, { width: 10 }];
+    var sHead = ["大分区", "区域数", "行数", "合计(元)", "占比"];
+    sws.addRow(sHead);
+    var sHeadR = sws.rowCount;
+    sHead.forEach(function (h, ci) { ec(sws, sHeadR, ci + 1, h, { font: cellFont(true), fill: "FFF0F0F0", align: center(), border: true }); });
+    var dTotal = projectDetailTotal(project);
+    (project.partitions || []).forEach(function (pt) {
+      var rows = 0;
+      (pt.regions || []).forEach(function (rg) { rows += (rg.rows || []).length; });
+      var t = partitionTotal(pt, project);
+      sws.addRow([pt.name, (pt.regions || []).length, rows, t, dTotal ? round2(t / dTotal * 100) + "%" : "0%"]);
+      var rr = sws.rowCount;
+      [1, 2, 3, 4, 5].forEach(function (c2) { ec(sws, rr, c2, sws.getCell(rr, c2).value, { border: true }); });
+      var cc4 = sws.getCell(rr, 4); if (typeof cc4.value === "number") { cc4.numFmt = MONEY; cc4.alignment = rightNum(); }
+    });
+    sws.addRow(["明细合计", "", "", dTotal, "100%"]);
+    var sr = sws.rowCount;
+    ec(sws, sr, 1, "明细合计", { font: cellFont(true), fill: "FFF5F5F5", border: true });
+    ec(sws, sr, 4, dTotal, { font: cellFont(true), fill: "FFF5F5F5", border: true, numFmt: MONEY, align: rightNum() });
+    sws.addRow(["定制合计", "", "", ct.total, ""]);
+    sr = sws.rowCount;
+    ec(sws, sr, 1, "定制合计", { font: cellFont(true), fill: "FFF5F5F5", border: true });
+    ec(sws, sr, 4, ct.total, { font: cellFont(true), fill: "FFF5F5F5", border: true, numFmt: MONEY, align: rightNum() });
+    sws.addRow(["最终总价（含定制）", "", "", round2(dTotal + ct.total), ""]);
+    sr = sws.rowCount;
+    ec(sws, sr, 1, "最终总价（含定制）", { font: cellFont(true), fill: "FFF7E6C8", border: true });
+    ec(sws, sr, 4, round2(dTotal + ct.total), { font: cellFont(true), fill: "FFF7E6C8", border: true, numFmt: MONEY, align: rightNum() });
+    return wb;
+  }
+  function cField(p, key) {
+    return (p.custom && p.custom[key]) ? String(p.custom[key]) : "";
+  }
+
+  /* ---------------- 空白模板 ---------------- */
+  function buildBlankProject() {
+    var p = blankProject("示例项目");
+    p.company = { name: "", address: "", site: "", phone: "" };
+    p.partitions = [
+      {
+        name: "基础装修项目（轻工辅料）", collapsed: false,
+        regions: [
+          {
+            name: "客餐厅、玄关、阳台、过道", height: 2.7, area: 31.2, perimeter: 39,
+            rows: [
+              { item: "地面铺砖", qtyFormula: "=面积", qty: "", unit: "平米", price: 50, note: "1、800*800常规瓷砖正常铺贴，门窗口不减面积；（注：地面拼花、造型费用另计）" },
+              { item: "踢脚线粘贴", qtyFormula: "=周长", qty: "", unit: "米", price: 10, note: "人工费。" },
+              { item: "墙顶基层处理及亮白辅料", qtyFormula: "=周长*房高+面积", qty: "", unit: "平米", price: 30, note: "1.采用（美巢）墙锢所有墙顶面滚刷一遍；2、批刮（美巢）腻子二遍" }
+            ]
+          },
+          {
+            name: "卫生间", height: 2.7, area: 4, perimeter: 8.3,
+            rows: [
+              { item: "地面铺砖", qtyFormula: "=周长*房高+面积", qty: "", unit: "平米", price: 50, note: "300*600常规瓷砖正常铺贴" },
+              { item: "防水", qtyFormula: "", qty: 1, unit: "项", price: 1300, note: "滚刷防水涂料2遍，高度1.8米。闭水测试24-48小时" },
+              { item: "瓷砖美缝", qtyFormula: "=卫生间.面积+客餐厅、玄关、阳台、过道.面积", qty: "", unit: "平米", price: 13, note: "瓷缝剂美缝施工；品牌：东方雨虹美缝剂" }
+            ]
+          }
+        ]
+      },
+      {
+        name: "隐蔽及基础项目", collapsed: false,
+        regions: [
+          {
+            name: "隐蔽及基础项目", height: 2.7, area: 0, perimeter: 0,
+            rows: [
+              { item: "开荒保洁", qtyFormula: "", qty: 1, unit: "次", price: 300, note: "清理墙面浮灰，清理室内垃圾，擦玻璃" },
+              { item: "建筑垃圾清运", qtyFormula: "", qty: 1, unit: "车", price: 800, note: "清理装袋运送至小区指定地点" }
+            ]
+          }
+        ]
+      },
+      {
+        name: "主材类目", collapsed: false,
+        regions: [
+          {
+            name: "未分区", height: "", area: "", perimeter: "",
+            rows: [
+              { item: "大地砖", qtyFormula: "", qty: 94, unit: "片", price: 40, note: "800*800通体瓷砖，品牌：广东金璞陶瓷砖" },
+              { item: "铝扣板吊顶", qtyFormula: "=卫生间.面积+厨房.面积", qty: "", unit: "平米", price: 115, note: "含工料，铝扣板集成吊顶及配件，厚度0.6以上" }
+            ]
+          }
+        ]
+      }
+    ];
+    p.custom = blankCustom();
+    p.custom.custName = "示例客户";
+    p.custom.brand = "全屋定制";
+    p.custom.wardrobe = [
+      { item: "电视柜", qty: 3.06, unit: "㎡", price: 720, total: 2203.2 },
+      { item: "主卧衣柜", qty: 4.9, unit: "㎡", price: 720, total: 3528 }
+    ];
+    p.custom.kitchen = [
+      { item: "橱柜（地柜）", qty: 2.86, unit: "延米", price: 800, total: 2288 },
+      { item: "橱柜（吊柜）", qty: 1.45, unit: "延米", price: 600, total: 870 }
+    ];
+    p.water = blankWater();
+    p.water.items = [
+      { item: "电路改造  2.5²", unit: "米", qty: 0, price: 50, subtotal: 0, note: "" },
+      { item: "水路改造", unit: "米", qty: 0, price: 55, subtotal: 0, note: "" }
+    ];
+    p.water.refs = [
+      { item: "水路改造", unit: "米", price: 55, note: "" },
+      { item: "电路改造(4平方)", unit: "米", price: 65, note: "" }
+    ];
+    return p;
+  }
+
+  return {
+    NEW_HEADERS: NEW_HEADERS,
+    SIZE_LABELS: SIZE_LABELS,
+    SIZE_TOKENS: SIZE_TOKENS,
+    cellStr: cellStr, numOr0: numOr0, round2: round2, fmt: fmt,
+    safeArith: safeArith,
+    regSize: regSize, rowQty: rowQty, rowTotal: rowTotal,
+    evalSemanticExpr: evalSemanticExpr,
+    excelFormulaToSemantic: excelFormulaToSemantic,
+    semanticToExcelFormula: semanticToExcelFormula,
+    blankProject: blankProject, blankCustom: blankCustom, blankWater: blankWater,
+    blankRegion: blankRegion, blankRow: blankRow,
+    migrateProject: migrateProject,
+    parseWorkbook: parseWorkbook, detectDetailMode: detectDetailMode,
+    regionTotal: regionTotal, partitionTotal: partitionTotal,
+    projectDetailTotal: projectDetailTotal, customTotals: customTotals, customRowTotal: customRowTotal,
+    waterTotal: waterTotal, calcFees: calcFees, calcAllRegions: calcAllRegions,
+    buildExportWorkbook: buildExportWorkbook, buildBlankProject: buildBlankProject
+  };
+})();
+if (typeof module !== "undefined" && module.exports) module.exports = QuoteCore;
+/* __CORE_END__ */
+
+/* ================= UI 层（浏览器 DOM） ================= */
+var STORE_KEY = "renovation-quote-workbench-v4";
+var TRASH_KEY = "renovation-quote-workbench-trash-v4";
+var TEMPLATE_KEY = "renovation-quote-workbench-tpl-v5";
+var TEMPLATE_B64 = "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";
+var projects = [];
+var trash = [];
+var currentIdx = 0;
+
+function $ (id) { return document.getElementById(id); }
+function esc (s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+function current () { return projects[currentIdx] || (projects[0] = QuoteCore.blankProject("新项目")); }
+function toast (msg) { var t = $("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(function () { t.classList.remove("show"); }, 2200); }
+
+/* ---------- 本地存储 ---------- */
+function loadProjects () {
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    projects = raw ? JSON.parse(raw) : [];
+  } catch (e) { projects = []; }
+  if (!projects.length) projects.push(QuoteCore.blankProject("新项目"));
+  projects.forEach(QuoteCore.migrateProject);
+  currentIdx = 0;
+}
+function loadTrash () {
+  try {
+    var raw = localStorage.getItem(TRASH_KEY);
+    trash = raw ? JSON.parse(raw) : [];
+  } catch (e) { trash = []; }
+}
+function saveTrash () {
+  try { localStorage.setItem(TRASH_KEY, JSON.stringify(trash)); }
+  catch (e) { toast("回收站保存失败（存储可能已满）"); }
+}
+function saveCurrent () {
+  var p = current();
+  p.name = $("projName").value; p.client = $("client").value; p.address = $("address").value;
+  p.quoteDate = $("quoteDate").value; p.remark = $("remark").value;
+  p.lossRate = parseFloat($("lossRate").value) || 0;
+  p.mgmtRate = parseFloat($("mgmtRate").value) || 0;
+  p.taxRate = parseFloat($("taxRate").value) || 0;
+  persist();
+}
+function saveCompany () {
+  var p = current();
+  p.company.name = $("companyName").value;
+  p.company.address = $("companyAddress").value;
+  p.company.site = $("companySite").value;
+  p.company.phone = $("companyPhone").value;
+  persist();
+}
+function saveCustom () {
+  var c = current().custom;
+  c.custName = $("custName").value; c.custPhone = $("custPhone").value;
+  c.brand = $("custBrand").value; c.board = $("custBoard").value;
+  c.custAddress = $("custAddress").value; c.signDate = $("custSignDate").value;
+  c.installDate = $("custInstallDate").value; c.owner = $("custOwner").value;
+  c.ownerPhone = $("custOwnerPhone").value; c.signature = $("custSignature").value;
+  c.remark = $("custRemark").value;
+  persist();
+}
+function saveWater () {
+  current().water.terms = $("waterTerms").value;
+  persist();
+}
+function persist () {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(projects)); } catch (e) { toast("保存失败（存储可能已满）"); }
+}
+
+/* ---------- 模块切换 ---------- */
+function switchModule (m) {
+  ["detail", "custom", "water"].forEach(function (x) { $("mod-" + x).classList.toggle("hidden", x !== m); });
+  document.querySelectorAll(".tab").forEach(function (b) { b.classList.toggle("active", b.dataset.mod === m); });
+  if (m === "custom") renderCustom();
+  if (m === "water") renderWater();
+}
+
+
+/* ---------- 首页 / 工作台切换 ---------- */
+function showHome () {
+  $("homeView").style.display = "block";
+  document.querySelector(".app").style.display = "none";
+  shellNav("list");
+  window.scrollTo(0, 0);
+}
+function enterWorkbench () {
+  $("homeView").style.display = "none";
+  document.querySelector(".app").style.display = "block";
+  window.scrollTo(0, 0);
+}
+function goHome () { showHome(); }
+function renderHomeStats () {
+  var c = $("homeProjCount");
+  if (c) c.textContent = projects.length + " 个报价单";
+  var b = $("homeTrashCount");
+  if (b) { b.textContent = trash.length; b.classList.toggle("hidden", trash.length === 0); }
+}
+/* ---------- 工作台外壳导航 ---------- */
+function shellNav (view) {
+  ["shellList", "shellTmpl", "shellTrash"].forEach(function (id) {
+    $(id).classList.toggle("hidden", id !== "shell" + view.charAt(0).toUpperCase() + view.slice(1));
+  });
+  document.querySelectorAll(".nav-btn").forEach(function (b) {
+    b.classList.toggle("active", b.dataset.view === view);
+  });
+  if (view === "list") renderProjList();
+  if (view === "tmpl") tmplSourceLabel(localStorage.getItem(TEMPLATE_KEY) ? "本地自定义模板（本浏览器内生效）" : "内置标准模板");
+  if (view === "trash") renderTrash();
+  window.scrollTo(0, 0);
+}
+function renderProjList () {
+  var box = $("projListBox");
+  var sum = $("homeProjCount");
+  if (sum) sum.textContent = projects.length + " 个报价单";
+  box.innerHTML = "";
+  if (!projects.length) {
+    projSel = {};
+    updateProjSelUI();
+    var d = document.createElement("div");
+    d.className = "proj-empty";
+    d.textContent = "还没有报价单，点击顶部「新建报价单」开始创建";
+    box.appendChild(d);
+    return;
+  }
+  projects.forEach(function (p, i) {
+    var pt = p.partitions || [];
+    var rg = 0, rw = 0;
+    pt.forEach(function (x) { rg += (x.regions || []).length; (x.regions || []).forEach(function (r) { rw += (r.rows || []).length; }); });
+    var total = QuoteCore.computeTotal ? QuoteCore.computeTotal(p) : 0;
+    var sub = "客户：" + esc(p.client || "未填写") + " · " + (p.quoteDate || "未定日期");
+    var card = document.createElement("div");
+    card.className = "proj-card" + (projSel[i] ? " selected" : "");
+    card.onclick = function () { openProjById(i); };
+    card.innerHTML = '<input type="checkbox" class="sel-cb"' + (projSel[i] ? " checked" : "") + '>' +
+      '<div class="p-name">' + esc(p.name || "未命名项目") + '</div>' +
+      '<div class="p-sub">' + esc(sub) + '<br>大分区 ' + pt.length + ' · 区域 ' + rg + ' · 明细行 ' + rw + '</div>' +
+      '<div class="p-meta"><span>点击进入编辑报价表</span><span class="p-total">合计 ¥' + total.toFixed(2) + '</span></div>';
+    card.querySelector(".sel-cb").onclick = function (e) { e.stopPropagation(); toggleProjSel(i); };
+    box.appendChild(card);
+  });
+  updateProjSelUI();
+}
+function openProjById (i) {
+  if (i < 0 || i >= projects.length) return;
+  currentIdx = i;
+  fillProjSelect();
+  renderAll();
+  enterWorkbench();
+}
+
+/* ---------- 弹窗 ---------- */
+function openModal (id) { $(id).classList.remove("hidden"); }
+function closeModal (id) { $(id).classList.add("hidden"); }
+
+/* ---------- 新建报价单 ---------- */
+function openNewProjModal () {
+  $("newProjName").value = "项目" + (projects.length + 1);
+  $("newProjClient").value = "";
+  openModal("newProjModal");
+  setTimeout(function () { $("newProjName").focus(); }, 60);
+}
+function createProjectFromDialog () {
+  var n = ($("newProjName").value || "").trim();
+  var cl = ($("newProjClient").value || "").trim();
+  if (!n) { toast("请填写项目名称"); $("newProjName").focus(); return; }
+  var np = QuoteCore.blankProject(n);
+  np.client = cl;
+  projects.push(np);
+  currentIdx = projects.length - 1;
+  fillProjSelect(); renderAll(); persist(); renderHomeStats();
+  closeModal("newProjModal");
+  enterWorkbench();
+  toast("已新建报价单：" + n);
+}
+
+/* ---------- 模板管理 ---------- */
+function tmplSourceLabel (t) {
+  var l = $("tmplSourceLabel");
+  if (l) l.textContent = t;
+}
+function openTmpl () { shellNav("tmpl"); }
+function createFromTemplate () {
+  var b64 = localStorage.getItem(TEMPLATE_KEY) || TEMPLATE_B64;
+  if (!b64) { toast("模板数据缺失，请先选择本地模板文件"); return; }
+  try {
+    var bin = atob(b64);
+    var arr = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    var wb = XLSX.read(arr, { type: "array" });
+    var np = createProjectFromWorkbook(wb, "装修报价模板");
+    enterWorkbench();
+    toast("已从模板一键新建报价单：" + np.name);
+  } catch (err) {
+    toast("模板导入失败：" + err.message);
+  }
+}
+function importTemplateFile (ev) {
+  var file = ev.target.files && ev.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      var u8 = new Uint8Array(e.target.result);
+      var bin = "";
+      for (var i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
+      localStorage.setItem(TEMPLATE_KEY, btoa(bin));
+      tmplSourceLabel("本地自定义模板（本浏览器内生效）");
+      toast("模板已更新：" + file.name + "，可直接从模板一键新建");
+    } catch (err) {
+      toast("模板读取失败：" + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  ev.target.value = "";
+}
+
+/* ---------- 回收站 ---------- */
+function openTrash () { shellNav("trash"); }
+function renderTrash () {
+  var box = $("trashList");
+  var sum = $("trashSummary");
+  sum.textContent = trash.length ? "共 " + trash.length + " 个项目" : "回收站为空";
+  box.innerHTML = "";
+  if (!trash.length) {
+    trashSel = {};
+    updateTrashSelUI();
+    var d = document.createElement("div");
+    d.className = "trash-empty";
+    d.textContent = "回收站为空，删除的项目会先进入这里";
+    box.appendChild(d);
+    return;
+  }
+  trash.forEach(function (t, i) {
+    var it = document.createElement("div");
+    it.className = "trash-item";
+    var p = t.project || {};
+    var pt = p.partitions || [];
+    var rg = 0, rw = 0;
+    pt.forEach(function (x) { rg += (x.regions || []).length; (x.regions || []).forEach(function (r) { rw += (r.rows || []).length; }); });
+    var sub = "删除于 " + (t.deletedAt ? new Date(t.deletedAt).toLocaleString() : "未知") + " · 分区 " + pt.length + " / 区域 " + rg + " / 明细行 " + rw + " · 定制 " + (p.custom ? p.custom.wardrobe.length + "+" + p.custom.kitchen.length : "0+0") + " · 水电 " + (p.water ? p.water.items.length : 0) + " 行";
+    it.innerHTML = '<input type="checkbox" class="sel-cb"' + (trashSel[i] ? " checked" : "") + '>' +
+      '<div><div class="t-name">' + esc(p.name || "未命名项目") + '</div><div class="t-sub">' + esc(sub) + '</div></div>' +
+      '<div class="t-actions"><button class="secondary" onclick="restoreFromTrash(' + i + ')">恢复</button>' +
+      '<button class="danger" onclick="purgeTrashItem(' + i + ')">彻底删除</button></div>';
+    it.querySelector(".sel-cb").onclick = function () { toggleTrashSel(i); };
+    box.appendChild(it);
+  });
+  updateTrashSelUI();
+}
+function restoreFromTrash (i) {
+  if (i < 0 || i >= trash.length) return;
+  var t = trash.splice(i, 1)[0];
+  projects.push(t.project || QuoteCore.blankProject("恢复项目"));
+  currentIdx = projects.length - 1;
+  fillProjSelect(); renderAll(); persist(); saveTrash(); renderTrash(); renderHomeStats();
+  toast("已恢复项目");
+}
+function purgeTrashItem (i) {
+  if (i < 0 || i >= trash.length) return;
+  var nm = (trash[i].project && trash[i].project.name) || "该项目";
+  var idx = i;
+  openConfirm("彻底删除确认", "确定彻底删除「<b>" + esc(nm) + "</b>」？此操作不可恢复。", "彻底删除", function () {
+    if (idx < 0 || idx >= trash.length) return;
+    trash.splice(idx, 1);
+    trashSel = {};
+    saveTrash(); renderTrash(); renderHomeStats();
+    toast("已彻底删除");
+  });
+}
+function emptyTrash () {
+  if (!trash.length) { toast("回收站已为空"); return; }
+  var n = trash.length;
+  openConfirm("清空回收站确认", "确定清空回收站？将彻底删除 <b>" + n + "</b> 个项目，此操作不可恢复。", "一键清空", function () {
+    trash = [];
+    trashSel = {};
+    saveTrash(); renderTrash(); renderHomeStats();
+    toast("回收站已清空");
+  });
+}
+
+/* ---------- 导入公共入口 ---------- */
+function createProjectFromWorkbook (wb, baseName) {
+  var np = QuoteCore.blankProject(baseName);
+  QuoteCore.parseWorkbook(wb, np);
+  projects.push(np);
+  currentIdx = projects.length - 1;
+  fillProjSelect(); renderAll(); persist(); renderHomeStats();
+  return np;
+}
+
+/* ---------- 项目管理 ---------- */
+function fillProjSelect () {
+  var sel = $("projSelect"); sel.innerHTML = "";
+  projects.forEach(function (p, i) {
+    var o = document.createElement("option"); o.value = i; o.text = p.name || "未命名项目";
+    sel.appendChild(o);
+  });
+  sel.value = String(currentIdx);
+}
+function addProject () {
+  openNewProjModal();
+}
+function renameProject () {
+  var n = prompt("项目名称：", current().name);
+  if (!n) return;
+  current().name = n; fillProjSelect(); renderAll(); persist();
+}
+function deleteProject () {
+  if (projects.length <= 1) { toast("至少保留一个项目"); return; }
+  var i = currentIdx;
+  var p = current();
+  openConfirm("删除确认", "确定将当前项目「<b>" + esc(p.name || "") + "</b>」移入回收站？可在回收站中恢复。", "移入回收站", function () {
+    if (i < 0 || i >= projects.length) return;
+    trash.push({ project: projects[i], deletedAt: Date.now() });
+    projects.splice(i, 1);
+    if (currentIdx >= projects.length) currentIdx = projects.length - 1;
+    projSel = {};
+    fillProjSelect(); renderAll(); saveTrash(); persist(); renderHomeStats();
+    if (!$("shellList").classList.contains("hidden")) renderProjList();
+    toast("已移入回收站");
+  });
+}
+/* ===== v5 新增：多选 / 批量操作 ===== */
+var projSel = {};
+var trashSel = {};
+function toggleProjSel (i) {
+  if (projSel[i]) delete projSel[i]; else projSel[i] = true;
+  var box = $("projListBox");
+  var card = box.children[i];
+  if (card) {
+    card.classList.toggle("selected", !!projSel[i]);
+    var cb = card.querySelector(".sel-cb");
+    if (cb) cb.checked = !!projSel[i];
+  }
+  updateProjSelUI();
+}
+function toggleSelectAll (checked) {
+  projSel = {};
+  if (checked) projects.forEach(function (_, i) { projSel[i] = true; });
+  renderProjList();
+}
+function updateProjSelUI () {
+  var n = Object.keys(projSel).length;
+  var sc = $("selCount"); if (sc) sc.textContent = "已选 " + n + " 项";
+  var btn = $("batchDelBtn"); if (btn) btn.disabled = n === 0;
+  var all = $("selAllCb"); if (all) all.checked = projects.length > 0 && n === projects.length;
+}
+function batchDeleteSelected () {
+  var idxs = Object.keys(projSel).map(Number).filter(function (i) { return i >= 0 && i < projects.length; });
+  if (!idxs.length) return;
+  var names = idxs.map(function (i) { return projects[i].name || "未命名项目"; });
+  openConfirm("批量删除确认", "确定将以下 <b>" + idxs.length + "</b> 个报价单移入回收站？可在回收站中恢复。<br><b>" + esc(names.join("、")) + "</b>", "移入回收站", function () {
+    var removed = 0, deletedCurrent = idxs.indexOf(currentIdx) >= 0;
+    idxs.sort(function (a, b) { return b - a; }).forEach(function (i) {
+      if (i < 0 || i >= projects.length) return;
+      trash.push({ project: projects[i], deletedAt: Date.now() });
+      projects.splice(i, 1);
+      removed++;
+    });
+    idxs.forEach(function (i) { if (i < currentIdx) currentIdx--; });
+    if (deletedCurrent || currentIdx >= projects.length) currentIdx = Math.max(0, projects.length - 1);
+    projSel = {};
+    fillProjSelect(); renderAll(); saveTrash(); persist(); renderHomeStats();
+    if (!$("shellList").classList.contains("hidden")) renderProjList();
+    toast("已将 " + removed + " 个项目移入回收站");
+  });
+}
+function toggleTrashSel (i) {
+  if (trashSel[i]) delete trashSel[i]; else trashSel[i] = true;
+  var box = $("trashList");
+  var it = box.children[i];
+  if (it) {
+    var cb = it.querySelector(".sel-cb");
+    if (cb) cb.checked = !!trashSel[i];
+  }
+  updateTrashSelUI();
+}
+function toggleTrashSelectAll (checked) {
+  trashSel = {};
+  if (checked) trash.forEach(function (_, i) { trashSel[i] = true; });
+  renderTrash();
+}
+function updateTrashSelUI () {
+  var n = Object.keys(trashSel).length;
+  var sc = $("trashSelCount"); if (sc) sc.textContent = "已选 " + n + " 项";
+  var btn = $("restoreSelBtn"); if (btn) btn.disabled = n === 0;
+  var all = $("trashSelAllCb"); if (all) all.checked = trash.length > 0 && n === trash.length;
+}
+function restoreTrashSelected () {
+  var idxs = Object.keys(trashSel).map(Number).filter(function (i) { return i >= 0 && i < trash.length; });
+  if (!idxs.length) return;
+  var names = idxs.map(function (i) { return (trash[i].project && trash[i].project.name) || "未命名项目"; });
+  openConfirm("批量恢复确认", "确定恢复回收站中的以下 <b>" + idxs.length + "</b> 个项目？<br><b>" + esc(names.join("、")) + "</b>", "恢复", function () {
+    var restored = 0;
+    idxs.sort(function (a, b) { return b - a; }).forEach(function (i) {
+      if (i < 0 || i >= trash.length) return;
+      var t = trash.splice(i, 1)[0];
+      projects.push(t.project || QuoteCore.blankProject("恢复项目"));
+      restored++;
+    });
+    trashSel = {};
+    currentIdx = projects.length - 1;
+    fillProjSelect(); renderAll(); saveTrash(); persist(); renderTrash(); renderHomeStats();
+    toast("已恢复 " + restored + " 个项目");
+  });
+}
+
+/* ===== v5 新增：通用确认弹窗（防误删） ===== */
+var confirmCb = null;
+function openConfirm (title, msgHtml, okText, onOk) {
+  var t = $("confirmTitle"); if (t) t.textContent = title || "操作确认";
+  var m = $("confirmMsg"); if (m) m.innerHTML = msgHtml || "";
+  var ok = $("confirmOkBtn"); if (ok) ok.textContent = okText || "确认";
+  confirmCb = onOk || null;
+  openModal("confirmModal");
+}
+function closeConfirm () { confirmCb = null; closeModal("confirmModal"); }
+function confirmOk () {
+  var cb = confirmCb;
+  closeModal("confirmModal"); confirmCb = null;
+  if (cb) cb();
+}
+
+/* ===== v5 新增：主题切换（localStorage 持久化） ===== */
+var THEME_KEY = "renovation-quote-workbench-theme-v5";
+var THEMES = {
+  "tech-dark": { name: "深蓝科技", desc: "默认深色科技感风格，稳重高效", vars: {} },
+  "warm-gold": { name: "暖金经典", desc: "暖金主调，经典轻奢装修风", vars: {
+    "shell-bg": "radial-gradient(1000px 480px at 20% -10%,rgba(230,170,80,.35),transparent 55%),radial-gradient(800px 420px at 80% 10%,rgba(200,140,60,.18),transparent 60%),linear-gradient(160deg,#2a2114 0%,#3a2c18 45%,#2e2413 100%)",
+    "shell-top-bg": "rgba(30,24,14,.88)", "shell-top-border": "rgba(230,170,80,.35)", "shell-top-shadow": "0 8px 30px rgba(20,15,6,.4)",
+    "shell-text": "#f5ecdd", "shell-strong": "#fdf6ea", "shell-muted": "#c4ab8a", "shell-accent": "#f4c878",
+    "shell-accent-border": "rgba(244,200,120,.5)", "shell-accent-soft": "rgba(244,200,120,.1)",
+    "shell-card-bg": "rgba(255,240,214,.07)", "shell-card-border": "rgba(244,200,120,.22)", "shell-card-hover-border": "rgba(244,200,120,.7)",
+    "shell-icon-bg": "linear-gradient(135deg,rgba(244,200,120,.25),rgba(214,150,60,.1))", "shell-icon-border": "rgba(244,200,120,.45)",
+    "shell-glow-a": "rgba(214,150,60,.25)", "shell-glow-b": "rgba(244,200,120,.12)", "shell-foot": "#a8906a",
+    "brand-accent": "#e0a94e", "brand-grad": "linear-gradient(90deg,#f8d98e,#e0a94e 55%,#c07f30)", "brand-glow": "rgba(224,169,78,.3)", "accent-glow": "rgba(224,169,78,.2)",
+    "btn-accent-bg": "linear-gradient(135deg,#e0a94e,#c07f30)", "btn-accent-text": "#241a0a",
+    "proj-card-bg": "linear-gradient(160deg,rgba(255,240,214,.08),rgba(255,240,214,.03))", "proj-card-top": "rgba(224,169,78,.7)",
+    "proj-card-glow": "radial-gradient(circle,rgba(224,169,78,.2),transparent 70%)", "proj-meta-border": "rgba(244,200,120,.22)", "proj-total": "#f4c878",
+    "nav-bg": "rgba(255,240,214,.06)", "nav-border": "rgba(244,200,120,.22)", "nav-text": "#d8c6a8", "nav-hover-border": "rgba(244,200,120,.6)", "nav-hover-text": "#f8d98e",
+    "panel-head-border": "rgba(244,200,120,.35)",
+    "modal-box-bg": "linear-gradient(180deg,#332816,#251d0e)", "modal-box-border": "rgba(244,200,120,.25)", "modal-box-shadow": "0 22px 60px rgba(20,15,6,.65)",
+    "modal-input-bg": "#1f180b", "modal-input-border": "rgba(244,200,120,.28)",
+    "mask-bg": "rgba(20,15,6,.7)", "toast-bg": "#3a2c14", "danger": "#d9604f",
+    "input-bg": "#fffdf7", "btn-secondary-bg": "#efe6d2", "tab-bg": "#e9dfc8", "region-bg": "#f7efe0", "region-border": "#d9c8a8",
+    "partition-border": "#cbb48c", "partition-total-bg": "#f3ead6", "qty-result-bg": "#faf3e4",
+    "shadow-strong": "rgba(20,15,6,.45)", "shadow-glow": "rgba(224,169,78,.15)"
+  } },
+  "nordic-wood": { name: "北欧原木", desc: "浅色原木自然风，温馨明亮", vars: {
+    "shell-bg": "radial-gradient(1000px 480px at 20% -10%,rgba(190,150,100,.3),transparent 55%),radial-gradient(800px 420px at 80% 10%,rgba(220,200,170,.25),transparent 60%),linear-gradient(160deg,#f2ece2 0%,#e8dfd2 45%,#f5efe6 100%)",
+    "shell-top-bg": "rgba(255,252,246,.9)", "shell-top-border": "rgba(138,106,74,.25)", "shell-top-shadow": "0 8px 30px rgba(60,45,30,.18)",
+    "shell-text": "#4a4036", "shell-strong": "#332d26", "shell-muted": "#8a7d6e", "shell-accent": "#8a6a4a",
+    "shell-accent-border": "rgba(138,106,74,.5)", "shell-accent-soft": "rgba(138,106,74,.1)",
+    "shell-card-bg": "rgba(255,255,255,.6)", "shell-card-border": "rgba(138,106,74,.18)", "shell-card-hover-border": "rgba(138,106,74,.55)",
+    "shell-icon-bg": "linear-gradient(135deg,rgba(138,106,74,.2),rgba(190,160,120,.1))", "shell-icon-border": "rgba(138,106,74,.4)",
+    "shell-glow-a": "rgba(150,120,90,.2)", "shell-glow-b": "rgba(220,200,170,.25)", "shell-foot": "#a89a8a",
+    "brand-accent": "#8a6a4a", "brand-grad": "linear-gradient(90deg,#b89a72,#8a6a4a 55%,#6b4f36)", "brand-glow": "rgba(138,106,74,.25)", "accent-glow": "rgba(138,106,74,.15)",
+    "btn-accent-bg": "linear-gradient(135deg,#a8875f,#7c5c3e)", "btn-accent-text": "#fbf6ee",
+    "proj-card-bg": "linear-gradient(160deg,rgba(255,255,255,.85),rgba(255,255,255,.55))", "proj-card-top": "rgba(138,106,74,.7)",
+    "proj-card-glow": "radial-gradient(circle,rgba(168,135,95,.16),transparent 70%)", "proj-meta-border": "rgba(138,106,74,.2)", "proj-total": "#7c5c3e",
+    "nav-bg": "rgba(255,255,255,.5)", "nav-border": "rgba(138,106,74,.2)", "nav-text": "#5c534a", "nav-hover-border": "rgba(138,106,74,.5)", "nav-hover-text": "#6b4f36",
+    "panel-head-border": "rgba(138,106,74,.3)",
+    "modal-box-bg": "linear-gradient(180deg,#fdfaf4,#f2ece2)", "modal-box-border": "rgba(138,106,74,.25)", "modal-box-shadow": "0 22px 60px rgba(60,45,30,.3)",
+    "modal-input-bg": "#ffffff", "modal-input-border": "rgba(138,106,74,.3)",
+    "mask-bg": "rgba(60,45,30,.45)", "toast-bg": "#4a4036", "danger": "#c0564a",
+    "input-bg": "#ffffff", "btn-secondary-bg": "#efe7db", "tab-bg": "#e9e0d2", "region-bg": "#f6f0e7", "region-border": "#ddd0bc",
+    "partition-border": "#cfbea4", "partition-total-bg": "#f0e8da", "qty-result-bg": "#faf6ee",
+    "shadow-strong": "rgba(60,45,30,.25)", "shadow-glow": "rgba(138,106,74,.1)"
+  } },
+  "minimal-gray": { name: "简约灰白", desc: "极简灰白，现代中性风", vars: {
+    "shell-bg": "radial-gradient(900px 420px at 25% -10%,rgba(160,170,180,.25),transparent 55%),radial-gradient(800px 420px at 80% 10%,rgba(220,225,230,.3),transparent 60%),linear-gradient(160deg,#f4f5f6 0%,#e9ebee 45%,#f6f7f8 100%)",
+    "shell-top-bg": "rgba(255,255,255,.92)", "shell-top-border": "rgba(90,107,122,.2)", "shell-top-shadow": "0 8px 30px rgba(30,40,50,.14)",
+    "shell-text": "#3a3f45", "shell-strong": "#24282d", "shell-muted": "#7d858d", "shell-accent": "#5a6b7a",
+    "shell-accent-border": "rgba(90,107,122,.5)", "shell-accent-soft": "rgba(90,107,122,.08)",
+    "shell-card-bg": "rgba(255,255,255,.75)", "shell-card-border": "rgba(120,130,140,.22)", "shell-card-hover-border": "rgba(90,107,122,.5)",
+    "shell-icon-bg": "linear-gradient(135deg,rgba(90,107,122,.15),rgba(200,210,220,.1))", "shell-icon-border": "rgba(90,107,122,.35)",
+    "shell-glow-a": "rgba(120,140,160,.18)", "shell-glow-b": "rgba(200,210,220,.22)", "shell-foot": "#aab0b6",
+    "brand-accent": "#5a6b7a", "brand-grad": "linear-gradient(90deg,#7c8c9c,#5a6b7a 55%,#3e4c5a)", "brand-glow": "rgba(90,107,122,.22)", "accent-glow": "rgba(90,107,122,.12)",
+    "btn-accent-bg": "linear-gradient(135deg,#6a7b8c,#46535f)", "btn-accent-text": "#ffffff",
+    "proj-card-bg": "linear-gradient(160deg,rgba(255,255,255,.9),rgba(255,255,255,.6))", "proj-card-top": "rgba(90,107,122,.65)",
+    "proj-card-glow": "radial-gradient(circle,rgba(120,140,160,.14),transparent 70%)", "proj-meta-border": "rgba(120,130,140,.22)", "proj-total": "#46535f",
+    "nav-bg": "rgba(255,255,255,.55)", "nav-border": "rgba(120,130,140,.22)", "nav-text": "#5c646c", "nav-hover-border": "rgba(90,107,122,.5)", "nav-hover-text": "#3e4c5a",
+    "panel-head-border": "rgba(120,130,140,.28)",
+    "modal-box-bg": "linear-gradient(180deg,#ffffff,#f2f3f5)", "modal-box-border": "rgba(120,130,140,.25)", "modal-box-shadow": "0 22px 60px rgba(30,40,50,.25)",
+    "modal-input-bg": "#ffffff", "modal-input-border": "rgba(120,130,140,.3)",
+    "mask-bg": "rgba(30,40,50,.4)", "toast-bg": "#3a3f45", "danger": "#c8504a",
+    "input-bg": "#ffffff", "btn-secondary-bg": "#eceef0", "tab-bg": "#e4e7ea", "region-bg": "#f2f4f6", "region-border": "#d5dade",
+    "partition-border": "#c3c9cf", "partition-total-bg": "#eef0f3", "qty-result-bg": "#f7f8fa",
+    "shadow-strong": "rgba(30,40,50,.22)", "shadow-glow": "rgba(90,107,122,.08)"
+  } },
+  "industrial-dark": { name: "工业深色", desc: "炭黑工业风，橙红强调色", vars: {
+    "shell-bg": "radial-gradient(1000px 480px at 20% -10%,rgba(220,120,60,.22),transparent 55%),radial-gradient(800px 420px at 80% 10%,rgba(90,110,130,.25),transparent 60%),linear-gradient(160deg,#14161a 0%,#1c1f24 45%,#121418 100%)",
+    "shell-top-bg": "rgba(16,18,22,.9)", "shell-top-border": "rgba(232,137,74,.3)", "shell-top-shadow": "0 8px 30px rgba(0,0,0,.5)",
+    "shell-text": "#dde2e6", "shell-strong": "#f2f4f5", "shell-muted": "#8f979d", "shell-accent": "#e8894a",
+    "shell-accent-border": "rgba(232,137,74,.5)", "shell-accent-soft": "rgba(232,137,74,.1)",
+    "shell-card-bg": "rgba(255,255,255,.05)", "shell-card-border": "rgba(255,255,255,.14)", "shell-card-hover-border": "rgba(232,137,74,.6)",
+    "shell-icon-bg": "linear-gradient(135deg,rgba(232,137,74,.22),rgba(232,137,74,.07))", "shell-icon-border": "rgba(232,137,74,.4)",
+    "shell-glow-a": "rgba(220,120,60,.22)", "shell-glow-b": "rgba(232,137,74,.1)", "shell-foot": "#6a7176",
+    "brand-accent": "#e8894a", "brand-grad": "linear-gradient(90deg,#f4a86a,#e8894a 55%,#c26a35)", "brand-glow": "rgba(232,137,74,.3)", "accent-glow": "rgba(232,137,74,.18)",
+    "btn-accent-bg": "linear-gradient(135deg,#e8894a,#c26a35)", "btn-accent-text": "#14161a",
+    "proj-card-bg": "linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.02))", "proj-card-top": "rgba(232,137,74,.65)",
+    "proj-card-glow": "radial-gradient(circle,rgba(232,137,74,.18),transparent 70%)", "proj-meta-border": "rgba(255,255,255,.14)", "proj-total": "#f4a86a",
+    "nav-bg": "rgba(255,255,255,.05)", "nav-border": "rgba(255,255,255,.14)", "nav-text": "#c3cad0", "nav-hover-border": "rgba(232,137,74,.6)", "nav-hover-text": "#f4a86a",
+    "panel-head-border": "rgba(232,137,74,.3)",
+    "modal-box-bg": "linear-gradient(180deg,#20242a,#14171b)", "modal-box-border": "rgba(255,255,255,.15)", "modal-box-shadow": "0 22px 60px rgba(0,0,0,.6)",
+    "modal-input-bg": "#101216", "modal-input-border": "rgba(255,255,255,.18)",
+    "mask-bg": "rgba(0,0,0,.7)", "toast-bg": "#33383e", "danger": "#d95848",
+    "input-bg": "#ffffff", "btn-secondary-bg": "#eceef0", "tab-bg": "#e4e7ea", "region-bg": "#f2f4f6", "region-border": "#d5dade",
+    "partition-border": "#c3c9cf", "partition-total-bg": "#eef0f3", "qty-result-bg": "#f7f8fa",
+    "shadow-strong": "rgba(0,0,0,.5)", "shadow-glow": "rgba(232,137,74,.12)"
+  } },
+  "neo-chinese": { name: "新中式", desc: "深红棕东方韵味，米金点缀", vars: {
+    "shell-bg": "radial-gradient(1000px 480px at 20% -10%,rgba(178,58,52,.3),transparent 55%),radial-gradient(800px 420px at 80% 10%,rgba(210,170,110,.18),transparent 60%),linear-gradient(160deg,#24181a 0%,#332022 45%,#241a1c 100%)",
+    "shell-top-bg": "rgba(30,20,22,.9)", "shell-top-border": "rgba(217,179,128,.28)", "shell-top-shadow": "0 8px 30px rgba(0,0,0,.5)",
+    "shell-text": "#eee6e2", "shell-strong": "#faf3ef", "shell-muted": "#b7a29e", "shell-accent": "#d9b380",
+    "shell-accent-border": "rgba(217,179,128,.5)", "shell-accent-soft": "rgba(217,179,128,.1)",
+    "shell-card-bg": "rgba(255,255,255,.05)", "shell-card-border": "rgba(217,179,128,.18)", "shell-card-hover-border": "rgba(217,179,128,.6)",
+    "shell-icon-bg": "linear-gradient(135deg,rgba(217,179,128,.22),rgba(178,58,52,.1))", "shell-icon-border": "rgba(217,179,128,.4)",
+    "shell-glow-a": "rgba(178,58,52,.28)", "shell-glow-b": "rgba(217,179,128,.12)", "shell-foot": "#8f7c78",
+    "brand-accent": "#c9a062", "brand-grad": "linear-gradient(90deg,#e6c9a0,#c9a062 55%,#9c763c)", "brand-glow": "rgba(201,160,98,.3)", "accent-glow": "rgba(201,160,98,.18)",
+    "btn-accent-bg": "linear-gradient(135deg,#b23a34,#8c2c28)", "btn-accent-text": "#faf3ef",
+    "proj-card-bg": "linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.02))", "proj-card-top": "rgba(178,58,52,.7)",
+    "proj-card-glow": "radial-gradient(circle,rgba(178,58,52,.18),transparent 70%)", "proj-meta-border": "rgba(255,255,255,.14)", "proj-total": "#d9b380",
+    "nav-bg": "rgba(255,255,255,.05)", "nav-border": "rgba(217,179,128,.2)", "nav-text": "#cfc0ba", "nav-hover-border": "rgba(217,179,128,.6)", "nav-hover-text": "#e6c9a0",
+    "panel-head-border": "rgba(217,179,128,.3)",
+    "modal-box-bg": "linear-gradient(180deg,#3a282a,#241a1c)", "modal-box-border": "rgba(217,179,128,.25)", "modal-box-shadow": "0 22px 60px rgba(0,0,0,.6)",
+    "modal-input-bg": "#1d1315", "modal-input-border": "rgba(217,179,128,.28)",
+    "mask-bg": "rgba(15,8,10,.7)", "toast-bg": "#3a282a", "danger": "#c94a42",
+    "input-bg": "#fffdf9", "btn-secondary-bg": "#efe4d6", "tab-bg": "#e9e0d2", "region-bg": "#f6efe6", "region-border": "#d8c8b0",
+    "partition-border": "#c8b294", "partition-total-bg": "#f0e6d8", "qty-result-bg": "#faf4ec",
+    "shadow-strong": "rgba(0,0,0,.5)", "shadow-glow": "rgba(178,58,52,.15)"
+  } }
+};
+function applyTheme (t) {
+  var vars = THEMES[t] ? THEMES[t].vars : {};
+  var root = document.documentElement.style;
+  Object.keys(THEMES).forEach(function (k) {
+    Object.keys(THEMES[k].vars).forEach(function (v) { root.removeProperty("--" + v); });
+  });
+  Object.keys(vars).forEach(function (v) { root.setProperty("--" + v, vars[v]); });
+  try { localStorage.setItem(THEME_KEY, t); } catch (e) { toast("主题保存失败（存储可能已满）"); }
+  var grid = $("themeGrid");
+  if (grid) {
+    Array.prototype.forEach.call(grid.querySelectorAll(".theme-item"), function (el) {
+      el.classList.toggle("active", el.dataset.theme === t);
+    });
+  }
+}
+function initTheme () {
+  var saved = "tech-dark";
+  try { saved = localStorage.getItem(THEME_KEY) || "tech-dark"; } catch (e) {}
+  if (!THEMES[saved]) saved = "tech-dark";
+  applyTheme(saved);
+}
+function openThemeModal () {
+  var grid = $("themeGrid");
+  var cur = "tech-dark";
+  try { cur = localStorage.getItem(THEME_KEY) || "tech-dark"; } catch (e) {}
+  grid.innerHTML = "";
+  Object.keys(THEMES).forEach(function (k) {
+    var t = THEMES[k];
+    var el = document.createElement("div");
+    el.className = "theme-item" + (k === cur ? " active" : "");
+    el.dataset.theme = k;
+    el.innerHTML = '<div class="theme-swatch"></div>' +
+      '<div class="theme-name">' + esc(t.name) + '</div>' +
+      '<div class="theme-desc">' + esc(t.desc) + '</div>' +
+      '<div class="theme-check">✓</div>';
+    el.onclick = function () { applyTheme(k); };
+    grid.appendChild(el);
+  });
+  openModal("themeModal");
+}
+
+$("projSelect").addEventListener("change", function () {
+  currentIdx = parseInt(this.value, 10) || 0;
+  renderAll();
+});
+
+/* ---------- 明细报价渲染 ---------- */
+function renderDetail () {
+  var tb = $("detailBody"); tb.innerHTML = "";
+  var p = current();
+  var has = false;
+  p.partitions.forEach(function (pt, pi) {
+    has = true;
+    // 分区行
+    var tr = document.createElement("tr"); tr.className = "partition-row";
+    var td = document.createElement("td"); td.colSpan = 7;
+    var ptTotal = QuoteCore.partitionTotal(pt, p);
+    td.innerHTML = '<div class="partition-header">' +
+      '<button class="secondary" title="折叠/展开" onclick="togglePartition(' + pi + ')">' + (pt.collapsed ? "▶" : "▼") + "</button>" +
+      '<span class="muted">大分区</span><input value="' + esc(pt.name) + '" style="width:220px;font-weight:700;" onchange="setPartitionName(' + pi + ",this.value)" + '">' +
+      '<button class="secondary" onclick="addRegion(' + pi + ')">+ 区域</button>' +
+      '<button class="secondary" onclick="movePartition(' + pi + ",-1)" + '">↑分区</button>' +
+      '<button class="secondary" onclick="movePartition(' + pi + ",1)" + '">↓分区</button>' +
+      '<button class="danger" onclick="delPartition(' + pi + ')">删分区</button>' +
+      '<span class="muted">分区合计 <b id="partTotal-' + pi + '">' + QuoteCore.fmt(ptTotal) + '</b> 元</span>' +
+      "</div>";
+    tr.appendChild(td); tb.appendChild(tr);
+    if (pt.collapsed) return;
+    if (!pt.regions.length) {
+      tr = document.createElement("tr");
+      var tdE = document.createElement("td"); tdE.colSpan = 7; tdE.className = "empty-tip"; tdE.textContent = "该分区暂无区域，点击「+ 区域」添加";
+      tr.appendChild(tdE); tb.appendChild(tr);
+    }
+    pt.regions.forEach(function (rg, ri) {
+      // 区域标题行
+      tr = document.createElement("tr"); tr.className = "region-row";
+      td = document.createElement("td"); td.colSpan = 7;
+      td.innerHTML = '<div class="region-header">' +
+        '<span class="muted">区域</span><input class="regionName" value="' + esc(rg.name) + '" onchange="setRegionName(' + pi + "," + ri + ",this.value)" + '">' +
+        '<span class="lab">房高</span><input class="regionNum" type="number" step="0.01" value="' + esc(rg.height) + '" oninput="setRegionSizeLive(' + pi + "," + ri + ",'height',this.value)" + '" onchange="setRegionSize(' + pi + "," + ri + ",'height',this.value)" + '"><span class="unit">m</span>' +
+        '<span class="lab">面积</span><input class="regionNum" type="number" step="0.01" value="' + esc(rg.area) + '" oninput="setRegionSizeLive(' + pi + "," + ri + ",'area',this.value)" + '" onchange="setRegionSize(' + pi + "," + ri + ",'area',this.value)" + '"><span class="unit">m²</span>' +
+        '<span class="lab">周长</span><input class="regionNum" type="number" step="0.01" value="' + esc(rg.perimeter) + '" oninput="setRegionSizeLive(' + pi + "," + ri + ",'perimeter',this.value)" + '" onchange="setRegionSize(' + pi + "," + ri + ",'perimeter',this.value)" + '"><span class="unit">m</span>' +
+        '<button class="secondary" onclick="addRow(' + pi + "," + ri + ')">+ 行</button>' +
+        '<button class="secondary" onclick="moveRegion(' + pi + "," + ri + ",-1)" + '">↑</button>' +
+        '<button class="secondary" onclick="moveRegion(' + pi + "," + ri + ",1)" + '">↓</button>' +
+        '<button class="danger" onclick="delRegion(' + pi + "," + ri + ')">删区域</button>' +
+        '<span class="muted">小计 <b>' + QuoteCore.fmt(QuoteCore.regionTotal(rg, p)) + "</b> 元</span>" +
+        "</div>";
+      tr.appendChild(td); tb.appendChild(tr);
+      // 表头行
+      tr = document.createElement("tr");
+      var hs = ["项目名称", "工程量", "单位", "单价（元）", "合计（元）", "施工说明（施工位置、辅料品牌、尺寸、工艺标准）", "操作"];
+      hs.forEach(function (h) { var th = document.createElement("th"); th.textContent = h; tr.appendChild(th); });
+      tb.appendChild(tr);
+      if (!rg.rows.length) {
+        tr = document.createElement("tr");
+        var tdR = document.createElement("td"); tdR.colSpan = 7; tdR.className = "empty-tip"; tdR.textContent = "暂无明细行，点击「+ 行」添加";
+        tr.appendChild(tdR); tb.appendChild(tr);
+      }
+      rg.rows.forEach(function (rw, rwIdx) {
+        tr = document.createElement("tr"); tr.id = "row-" + pi + "-" + ri + "-" + rwIdx;
+        var qtyVal = rw.qtyFormula ? rw.qtyFormula : (rw.qty === "" || rw.qty == null ? "" : rw.qty);
+        var qtyCalc = QuoteCore.rowQty(rg, rw, p);
+        var total = QuoteCore.rowTotal(rg, rw, p);
+        var qtySel = qtyPresetMatch(rw);
+        var unitSel = unitPresetMatch(rw.unit);
+        var tdArr = [
+          '<input value="' + esc(rw.item) + '" placeholder="项目名称" onchange="setRow(' + pi + "," + ri + "," + rwIdx + ",'item',this.value)" + '">',
+          (rw.qtyFormula ? '<div class="qty-cell qty-result-cell"><input class="qty-result" value="' + esc(QuoteCore.fmt(qtyCalc)) + '" data-last="' + esc(QuoteCore.fmt(qtyCalc)) + '" title="删除此处文本可重新选择公式；直接输入数字可改为手动工程量" oninput="if(!this.value.trim()){qtyResultEdited(' + pi + ',' + ri + ',' + rwIdx + ',this.value)}" onchange="qtyResultEdited(' + pi + ',' + ri + ',' + rwIdx + ',this.value,this.dataset.last)"><div class="qty-note"><span class="qty-formula">' + esc(rw.qtyFormula) + '</span> ≈ ' + QuoteCore.fmt(qtyCalc) + '</div></div>' : '<div class="qty-cell"><select title="选择要关联的区域数据或组合运算" onchange="setRowQtyPreset(' + pi + ',' + ri + ',' + rwIdx + ',this.value)">' + presetOptions(QTY_PRESETS, qtySel, "自定义公式…") + '</select><input value="' + esc(qtyVal) + '" placeholder="=面积" onchange="setRowQty(' + pi + ',' + ri + ',' + rwIdx + ',this.value)"><div class="qty-note">' + QuoteCore.fmt(qtyCalc) + '</div></div>'),
+          '<div class="unit-cell"><select title="选择单位" onchange="setRowUnitPreset(' + pi + "," + ri + "," + rwIdx + ",this.value)" + '">' + unitOptions(unitSel) + '</select><input value="' + esc(rw.unit) + '" onchange="setRow(' + pi + "," + ri + "," + rwIdx + ",'unit',this.value)" + '"></div>',
+          '<input type="number" step="0.01" value="' + esc(rw.price) + '" onchange="setRow(' + pi + "," + ri + "," + rwIdx + ",'price',this.value)" + '">',
+          '<span class="auto">' + QuoteCore.fmt(total) + "</span>",
+          '<textarea rows="2" onchange="setRow(' + pi + "," + ri + "," + rwIdx + ",'note',this.value)" + '">' + esc(rw.note) + "</textarea>",
+          '<span class="row-actions"><button class="secondary" onclick="moveRow(' + pi + "," + ri + "," + rwIdx + ",-1)" + '">↑</button><button class="secondary" onclick="moveRow(' + pi + "," + ri + "," + rwIdx + ",1)" + '">↓</button><button class="danger" onclick="delRow(' + pi + "," + ri + "," + rwIdx + ')">×</button></span>'
+        ];
+        tdArr.forEach(function (h) { var tdX = document.createElement("td"); tdX.innerHTML = h; tr.appendChild(tdX); });
+        tb.appendChild(tr);
+      });
+      // 小计行
+      tr = document.createElement("tr"); tr.className = "subtotal-row";
+      var tdSt = document.createElement("td"); tdSt.colSpan = 4; tdSt.textContent = "小计（元）";
+      var tdV = document.createElement("td"); tdV.id = "subtotal-" + pi + "-" + ri; tdV.textContent = QuoteCore.fmt(QuoteCore.regionTotal(rg, p));
+      var tdNote = document.createElement("td"); tdNote.textContent = "备注";
+      var tdOps = document.createElement("td"); tdOps.textContent = "";
+      tr.appendChild(tdSt); tr.appendChild(tdV); tr.appendChild(tdNote); tr.appendChild(tdOps);
+      tb.appendChild(tr);
+    });
+  });
+  if (!has) {
+    var tr0 = document.createElement("tr");
+    var td0 = document.createElement("td"); td0.colSpan = 7; td0.className = "empty-tip";
+    td0.textContent = "暂无明细，点击「+ 添加大分区」或导入 Excel";
+    tr0.appendChild(td0); tb.appendChild(tr0);
+  }
+}
+
+/* ---------- 分区/区域/行 操作 ---------- */
+function togglePartition (pi) { current().partitions[pi].collapsed = !current().partitions[pi].collapsed; renderDetail(); renderSummary(); persist(); }
+function setPartitionName (pi, v) { current().partitions[pi].name = v; renderDetail(); renderSummary(); persist(); }
+function addPartition () {
+  var n = prompt("大分区名称：", "基础工程项目");
+  if (!n) return;
+  current().partitions.push({ name: n, collapsed: false, regions: [] });
+  renderDetail(); renderSummary(); persist();
+}
+function delPartition (pi) {
+  if (!confirm("确认删除该大分区及其所有区域/明细？")) return;
+  current().partitions.splice(pi, 1);
+  renderDetail(); renderSummary(); persist();
+}
+function movePartition (pi, d) {
+  var parts = current().partitions;
+  var j = pi + d;
+  if (j < 0 || j >= parts.length) return;
+  var t = parts[pi]; parts[pi] = parts[j]; parts[j] = t;
+  renderDetail(); renderSummary(); persist();
+}
+function addRegion (pi) {
+  var n = prompt("区域名称：", "新区域");
+  if (!n) return;
+  current().partitions[pi].regions.push(QuoteCore.blankRegion(n));
+  renderDetail(); renderSummary(); persist();
+}
+function setRegionName (pi, ri, v) { current().partitions[pi].regions[ri].name = v; renderDetail(); renderSummary(); persist(); }
+function setRegionSize (pi, ri, key, v) {
+  current().partitions[pi].regions[ri][key] = (v === "" ? "" : parseFloat(v));
+  renderDetail(); renderSummary(); persist();
+}
+function setRegionSizeLive (pi, ri, key, v) {
+  current().partitions[pi].regions[ri][key] = (v === "" ? "" : parseFloat(v));
+  refreshRegionCalc(); renderSummary(); persist();
+}
+function refreshRegionCalc () {
+  // 手动修改区域尺寸后，局部刷新所有区域的工程量/合计/小计（含跨区域引用），不重建表格避免丢焦点
+  var p = current();
+  p.partitions.forEach(function (pt, pi) {
+    pt.regions.forEach(function (rg, ri) {
+      rg.rows.forEach(function (rw, rwIdx) {
+        var qtyCalc = QuoteCore.rowQty(rg, rw, p);
+        var total = QuoteCore.rowTotal(rg, rw, p);
+        var tr = document.getElementById("row-" + pi + "-" + ri + "-" + rwIdx);
+        if (!tr) return;
+        var note = tr.querySelector(".qty-note");
+        if (note) note.innerHTML = (rw.qtyFormula ? '<span class="qty-formula">' + esc(rw.qtyFormula) + "</span> ≈ " : "") + QuoteCore.fmt(qtyCalc);
+        var auto = tr.querySelector(".auto");
+        if (auto) auto.textContent = QuoteCore.fmt(total);
+      });
+      var st = document.getElementById("subtotal-" + pi + "-" + ri);
+      if (st) st.textContent = QuoteCore.fmt(QuoteCore.regionTotal(rg, p));
+    });
+    var pt = document.getElementById("partTotal-" + pi);
+    if (pt) pt.textContent = QuoteCore.fmt(QuoteCore.partitionTotal(p.partitions[pi], p));
+  });
+}
+function delRegion (pi, ri) {
+  if (!confirm("确认删除该区域及其明细？")) return;
+  current().partitions[pi].regions.splice(ri, 1);
+  renderDetail(); renderSummary(); persist();
+}
+function moveRegion (pi, ri, d) {
+  var regs = current().partitions[pi].regions;
+  var j = ri + d;
+  if (j < 0 || j >= regs.length) return;
+  var t = regs[ri]; regs[ri] = regs[j]; regs[j] = t;
+  renderDetail(); renderSummary(); persist();
+}
+function addRow (pi, ri) {
+  current().partitions[pi].regions[ri].rows.push(QuoteCore.blankRow(""));
+  renderDetail(); renderSummary(); persist();
+}
+function setRow (pi, ri, rwIdx, key, v) {
+  var row = current().partitions[pi].regions[ri].rows[rwIdx];
+  if (key === "price" || key === "qty") row[key] = parseFloat(v) || 0;
+  else row[key] = v;
+  renderDetail(); renderSummary(); persist();
+}
+function setRowQty (pi, ri, rwIdx, v) {
+  var row = current().partitions[pi].regions[ri].rows[rwIdx];
+  v = String(v || "").trim();
+  if (v[0] === "=") { row.qtyFormula = v; row.qty = ""; }
+  else { row.qtyFormula = ""; row.qty = (v === "" ? "" : parseFloat(v) || 0); }
+  renderDetail(); renderSummary(); persist();
+}
+/* ---------------- 工程量/单位 下拉关联 ---------------- */
+var QTY_PRESETS = [
+  { label: "无关联（手动输入）", expr: "" },
+  { label: "面积", expr: "=面积" },
+  { label: "周长", expr: "=周长" },
+  { label: "房高", expr: "=房高" },
+  { label: "面积+周长", expr: "=面积+周长" },
+  { label: "面积-周长", expr: "=面积-周长" },
+  { label: "面积×周长", expr: "=面积*周长" },
+  { label: "面积×房高", expr: "=面积*房高" },
+  { label: "周长×房高", expr: "=周长*房高" },
+  { label: "周长×房高-面积", expr: "=周长*房高-面积" },
+  { label: "房高×周长+面积", expr: "=房高*周长+面积" },
+  { label: "自定义公式…", expr: "__custom" }
+];
+var UNIT_PRESETS = ["平米", "米", "项", "樘", "延米", "投影", "个", "套", "台", "组", "根", "块", "张", "对", "付", "扇", "卷", "幅", "条", "升", "桶", "袋", "包", "盒", "罐", "瓶", "支", "管", "节", "段", "处", "次", "天", "小时"];
+function qtyPresetMatch (row) {
+  var f = row.qtyFormula ? String(row.qtyFormula).trim() : "";
+  for (var i = 0; i < QTY_PRESETS.length; i++) {
+    var e = QTY_PRESETS[i].expr;
+    if (e && e !== "__custom" && f === e) return e;
+  }
+  return (f === "" && (row.qty === "" || row.qty == null)) ? "" : "__custom";
+}
+function unitPresetMatch (unit) {
+  return UNIT_PRESETS.indexOf(unit) >= 0 ? unit : (unit ? "__custom" : "");
+}
+function presetOptions (presets, sel, customLabel) {
+  var h = "";
+  for (var i = 0; i < presets.length; i++) {
+    var p = presets[i];
+    h += '<option value="' + esc(p.expr) + '"' + (p.expr === sel ? " selected" : "") + ">" + esc(p.label) + "</option>";
+  }
+  h += '<option value="__custom"' + (sel === "__custom" ? " selected" : "") + ">" + esc(customLabel) + "</option>";
+  return h;
+}
+function unitOptions (sel) {
+  var h = '<option value=""' + (sel === "" ? " selected" : "") + ">选择单位…</option>";
+  for (var i = 0; i < UNIT_PRESETS.length; i++) {
+    var u = UNIT_PRESETS[i];
+    h += '<option value="' + esc(u) + '"' + (u === sel ? " selected" : "") + ">" + esc(u) + "</option>";
+  }
+  h += '<option value="__custom"' + (sel === "__custom" ? " selected" : "") + ">自定义…</option>";
+  return h;
+}
+function setRowQtyPreset (pi, ri, rwIdx, v) {
+  var row = current().partitions[pi].regions[ri].rows[rwIdx];
+  if (v === "__custom") {
+    var inp = document.querySelector("#row-" + pi + "-" + ri + "-" + rwIdx + " .qty-cell input");
+    if (inp) { inp.focus(); inp.select(); }
+    return;
+  }
+  if (v === "") { row.qtyFormula = ""; row.qty = ""; }
+  else { row.qtyFormula = v; row.qty = ""; }
+  renderDetail(); renderSummary(); persist();
+}
+function qtyResultEdited (pi, ri, rwIdx, v, last) {
+  var row = current().partitions[pi].regions[ri].rows[rwIdx];
+  v = String(v || "").trim();
+  if (last != null && v === String(last).trim()) return;
+  if (v === "") { row.qtyFormula = ""; row.qty = ""; }
+  else if (v.charAt(0) === "=") { row.qtyFormula = v; row.qty = ""; }
+  else { row.qtyFormula = ""; row.qty = parseFloat(v) || 0; }
+  renderDetail(); renderSummary(); persist();
+}
+function setRowUnitPreset (pi, ri, rwIdx, v) {
+  var row = current().partitions[pi].regions[ri].rows[rwIdx];
+  if (v === "__custom") {
+    var inp = document.querySelector("#row-" + pi + "-" + ri + "-" + rwIdx + " .unit-cell input");
+    if (inp) { inp.focus(); inp.select(); }
+    return;
+  }
+  row.unit = v;
+  renderDetail(); renderSummary(); persist();
+}
+function delRow (pi, ri, rwIdx) {
+  current().partitions[pi].regions[ri].rows.splice(rwIdx, 1);
+  renderDetail(); renderSummary(); persist();
+}
+function moveRow (pi, ri, rwIdx, d) {
+  var rows = current().partitions[pi].regions[ri].rows;
+  var j = rwIdx + d;
+  if (j < 0 || j >= rows.length) return;
+  var t = rows[rwIdx]; rows[rwIdx] = rows[j]; rows[j] = t;
+  renderDetail(); renderSummary(); persist();
+}
+
+/* ---------- 定制明细渲染 ---------- */
+function renderCustom () {
+  var p = current(), c = p.custom;
+  $("custName").value = c.custName || ""; $("custPhone").value = c.custPhone || "";
+  $("custBrand").value = c.brand || ""; $("custBoard").value = c.board || "";
+  $("custAddress").value = c.custAddress || ""; $("custSignDate").value = c.signDate || "";
+  $("custInstallDate").value = c.installDate || ""; $("custOwner").value = c.owner || "";
+  $("custOwnerPhone").value = c.ownerPhone || ""; $("custSignature").value = c.signature || "";
+  $("custRemark").value = c.remark || "";
+  renderCustomTable("wardrobeBody", c.wardrobe, "wardrobe");
+  renderCustomTable("kitchenBody", c.kitchen, "kitchen");
+  var t = QuoteCore.customTotals(p);
+  $("wardrobeTotal").textContent = QuoteCore.fmt(t.wardrobe);
+  $("kitchenTotal").textContent = QuoteCore.fmt(t.kitchen);
+  $("customGrandTotal").value = QuoteCore.fmt(t.total);
+  $("customFinalTotal").value = QuoteCore.fmt(t.total);
+}
+function renderCustomTable (bodyId, rows, side) {
+  var tb = $(bodyId); tb.innerHTML = "";
+  if (!rows.length) {
+    var tr = document.createElement("tr");
+    var td = document.createElement("td"); td.colSpan = 7; td.className = "empty-tip"; td.textContent = "暂无行，点击「+ 添加行」";
+    tr.appendChild(td); tb.appendChild(tr);
+  }
+  rows.forEach(function (rw, i) {
+    var tr = document.createElement("tr");
+    var cells = [
+      String(i + 1),
+      '<input value="' + esc(rw.item) + '" onchange="setCustomField(\'' + side + '\',' + i + ",'item',this.value)" + '">',
+      '<input type="number" step="0.01" value="' + esc(rw.qty) + '" onchange="setCustomField(\'' + side + '\',' + i + ",'qty',this.value)" + '">',
+      '<div class="unit-cell"><select title="选择单位" onchange="setCustomUnit(\'' + side + '\',' + i + ",this.value)" + '">' + unitOptions(unitPresetMatch(rw.unit)) + '</select><input value="' + esc(rw.unit) + '" onchange="setCustomField(\'' + side + '\',' + i + ",'unit',this.value)" + '"></div>',
+      '<input type="number" step="0.01" value="' + esc(rw.price) + '" onchange="setCustomField(\'' + side + '\',' + i + ",'price',this.value)" + '">',
+      '<span class="auto">' + QuoteCore.fmt(QuoteCore.customRowTotal(rw)) + "</span>",
+      '<span class="row-actions"><button class="secondary" onclick="moveCustomRow(\'' + side + '\',' + i + ",-1)" + '">↑</button><button class="secondary" onclick="moveCustomRow(\'' + side + '\',' + i + ",1)" + '">↓</button><button class="danger" onclick="delCustomRow(\'' + side + '\',' + i + ')">×</button></span>'
+    ];
+    cells.forEach(function (h) { var tdX = document.createElement("td"); tdX.innerHTML = h; tr.appendChild(tdX); });
+    tb.appendChild(tr);
+  });
+}
+function numOr0 (v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
+function setCustomField (side, i, key, v) {
+  var rows = side === "wardrobe" ? current().custom.wardrobe : current().custom.kitchen;
+  if (key === "qty" || key === "price") rows[i][key] = parseFloat(v) || 0;
+  else rows[i][key] = v;
+  if (key === "qty" || key === "price") rows[i].total = numOr0(rows[i].qty) * numOr0(rows[i].price);
+  renderCustom(); persist();
+}
+function setCustomUnit (side, i, v) {
+  var rows = side === "wardrobe" ? current().custom.wardrobe : current().custom.kitchen;
+  if (v === "__custom") {
+    var trs = document.querySelectorAll("#" + (side === "wardrobe" ? "wardrobeBody" : "kitchenBody") + " tr");
+    var inp = trs[i] ? trs[i].querySelector(".unit-cell input") : null;
+    if (inp) { inp.focus(); inp.select(); }
+    return;
+  }
+  rows[i].unit = v;
+  renderCustom(); persist();
+}
+function addCustomRow (side) {
+  var rows = side === "wardrobe" ? current().custom.wardrobe : current().custom.kitchen;
+  rows.push({ item: "", qty: 0, unit: "", price: 0, total: 0 });
+  renderCustom(); persist();
+}
+function moveCustomRow (side, i, d) {
+  var rows = side === "wardrobe" ? current().custom.wardrobe : current().custom.kitchen;
+  var j = i + d; if (j < 0 || j >= rows.length) return;
+  var t = rows[i]; rows[i] = rows[j]; rows[j] = t;
+  renderCustom(); persist();
+}
+function delCustomRow (side, i) {
+  var rows = side === "wardrobe" ? current().custom.wardrobe : current().custom.kitchen;
+  rows.splice(i, 1);
+  renderCustom(); persist();
+}
+
+/* ---------- 水电明细渲染 ---------- */
+function renderWater () {
+  var w = current().water;
+  $("waterTerms").value = w.terms || "";
+  var tb = $("waterBody"); tb.innerHTML = "";
+  if (!w.items.length) {
+    var tr = document.createElement("tr");
+    var td = document.createElement("td"); td.colSpan = 8; td.className = "empty-tip"; td.textContent = "暂无工程行，点击「+ 添加工程行」";
+    tr.appendChild(td); tb.appendChild(tr);
+  }
+  w.items.forEach(function (it, i) {
+    var tr = document.createElement("tr"); tr.id = "wrow-" + i;
+    var subtotal = numOr0(it.qty) * numOr0(it.price);
+    it.subtotal = subtotal;
+    var unitSel = unitPresetMatch(it.unit);
+    var cells = [
+      String(i + 1),
+      '<input value="' + esc(it.item) + '" onchange="setWaterField(' + i + ",'item',this.value)" + '">',
+      '<input type="number" step="0.01" value="' + esc(it.qty) + '" onchange="setWaterField(' + i + ",'qty',this.value)" + '">',
+      '<div class="unit-cell"><select title="选择单位" onchange="setWaterUnitPreset(' + i + ",this.value)" + '">' + unitOptions(unitSel) + '</select><input value="' + esc(it.unit) + '" onchange="setWaterField(' + i + ",'unit',this.value)" + '"></div>',
+      '<input type="number" step="0.01" value="' + esc(it.price) + '" onchange="setWaterField(' + i + ",'price',this.value)" + '">',
+      '<span class="auto">' + QuoteCore.fmt(subtotal) + "</span>",
+      '<input value="' + esc(it.note) + '" onchange="setWaterField(' + i + ",'note',this.value)" + '">',
+      '<span class="row-actions"><button class="danger" onclick="delWaterRow(' + i + ')">×</button></span>'
+    ];
+    cells.forEach(function (h) { var tdX = document.createElement("td"); tdX.innerHTML = h; tr.appendChild(tdX); });
+    tb.appendChild(tr);
+  });
+  $("waterTotal").textContent = QuoteCore.fmt(QuoteCore.waterTotal(current()));
+  var tb2 = $("refBody"); tb2.innerHTML = "";
+  if (!w.refs.length) {
+    var tr2 = document.createElement("tr");
+    var td2 = document.createElement("td"); td2.colSpan = 7; td2.className = "empty-tip"; td2.textContent = "暂无参考行，点击「+ 添加参考行」";
+    tr2.appendChild(td2); tb2.appendChild(tr2);
+  }
+  w.refs.forEach(function (rf, i) {
+    var tr = document.createElement("tr"); tr.id = "rrow-" + i;
+    var unitSel = unitPresetMatch(rf.unit);
+    var cells = [
+      String(i + 1),
+      '<input value="' + esc(rf.item) + '" onchange="setRefField(' + i + ",'item',this.value)" + '">',
+      '<input type="number" step="0.01" value="' + esc(rf.qty) + '" onchange="setRefField(' + i + ",'qty',this.value)" + '">',
+      '<div class="unit-cell"><select title="选择单位" onchange="setRefUnitPreset(' + i + ",this.value)" + '">' + unitOptions(unitSel) + '</select><input value="' + esc(rf.unit) + '" onchange="setRefField(' + i + ",'unit',this.value)" + '"></div>',
+      '<input type="number" step="0.01" value="' + esc(rf.price) + '" onchange="setRefField(' + i + ",'price',this.value)" + '">',
+      '<input value="' + esc(rf.note) + '" onchange="setRefField(' + i + ",'note',this.value)" + '">',
+      '<span class="row-actions"><button class="danger" onclick="delRefRow(' + i + ')">×</button></span>'
+    ];
+    cells.forEach(function (h) { var tdX = document.createElement("td"); tdX.innerHTML = h; tr.appendChild(tdX); });
+    tb2.appendChild(tr);
+  });
+}
+function setWaterField (i, key, v) {
+  var it = current().water.items[i];
+  if (key === "qty" || key === "price") it[key] = parseFloat(v) || 0;
+  else it[key] = v;
+  it.subtotal = numOr0(it.qty) * numOr0(it.price);
+  renderWater(); persist();
+}
+function setWaterUnitPreset (i, v) {
+  var it = current().water.items[i];
+  if (v === "__custom") {
+    var inp = document.querySelector("#wrow-" + i + " .unit-cell input");
+    if (inp) { inp.focus(); inp.select(); }
+    return;
+  }
+  it.unit = v;
+  renderWater(); persist();
+}
+function addWaterRow () { current().water.items.push({ item: "", unit: "米", qty: 0, price: 0, subtotal: 0, note: "" }); renderWater(); persist(); }
+function delWaterRow (i) { current().water.items.splice(i, 1); renderWater(); persist(); }
+function setRefField (i, key, v) {
+  var rf = current().water.refs[i];
+  if (key === "qty" || key === "price") rf[key] = parseFloat(v) || 0;
+  else rf[key] = v;
+  renderWater(); persist();
+}
+function setRefUnitPreset (i, v) {
+  var rf = current().water.refs[i];
+  if (v === "__custom") {
+    var inp = document.querySelector("#rrow-" + i + " .unit-cell input");
+    if (inp) { inp.focus(); inp.select(); }
+    return;
+  }
+  rf.unit = v;
+  renderWater(); persist();
+}
+function addRefRow () { current().water.refs.push({ item: "", unit: "米", qty: 0, price: 0, note: "" }); renderWater(); persist(); }
+function delRefRow (i) { current().water.refs.splice(i, 1); renderWater(); persist(); }
+
+/* ---------- 汇总渲染 ---------- */
+function renderSummary () {
+  var p = current();
+  var tb = $("partitionBody"); tb.innerHTML = "";
+  var dTotal = QuoteCore.projectDetailTotal(p);
+  p.partitions.forEach(function (pt) {
+    var rows = 0; (pt.regions || []).forEach(function (rg) { rows += (rg.rows || []).length; });
+    var t = QuoteCore.partitionTotal(pt, p);
+    var tr = document.createElement("tr");
+    var cells = [pt.name, (pt.regions || []).length, rows, QuoteCore.fmt(t), dTotal ? QuoteCore.round2(t / dTotal * 100) + "%" : "0%"];
+    cells.forEach(function (h) { var tdX = document.createElement("td"); tdX.textContent = h; tr.appendChild(tdX); });
+    tb.appendChild(tr);
+  });
+  var tb2 = $("regionBody"); tb2.innerHTML = "";
+  QuoteCore.calcAllRegions(p).forEach(function (rg) {
+    var tr = document.createElement("tr");
+    var cells = [rg.partition + " / " + rg.region, QuoteCore.fmt(rg.height), QuoteCore.fmt(rg.area), QuoteCore.fmt(rg.perimeter), rg.rows, QuoteCore.fmt(rg.total), dTotal ? QuoteCore.round2(rg.total / dTotal * 100) + "%" : "0%"];
+    cells.forEach(function (h) { var tdX = document.createElement("td"); tdX.textContent = h; tr.appendChild(tdX); });
+    tb2.appendChild(tr);
+  });
+  var fees = QuoteCore.calcFees(p);
+  var ct = QuoteCore.customTotals(p);
+  var wt = QuoteCore.waterTotal(p);
+  var tb3 = $("totalBody"); tb3.innerHTML = "";
+  [
+    ["明细合计（大分区）", fees.base],
+    ["定制明细合计", ct.total],
+    ["水电现场工程量合计", wt],
+    ["材料损耗", fees.loss],
+    ["管理费", fees.mgmt],
+    ["税金", fees.tax],
+    ["工程总价（明细+损耗+管理+税）", fees.grand],
+    ["含定制最终总价", QuoteCore.round2(fees.grand + ct.total)]
+  ].forEach(function (row) {
+    var tr = document.createElement("tr");
+    var td1 = document.createElement("td"); td1.textContent = row[0];
+    var td2 = document.createElement("td"); td2.textContent = QuoteCore.fmt(row[1]);
+    tr.appendChild(td1); tr.appendChild(td2); tb3.appendChild(tr);
+  });
+}
+
+/* ---------- 全量渲染 ---------- */
+function renderAll () {
+  var p = current();
+  $("projName").value = p.name || ""; $("client").value = p.client || "";
+  $("address").value = p.address || ""; $("quoteDate").value = p.quoteDate || "";
+  $("remark").value = p.remark || "";
+  $("lossRate").value = p.lossRate || 0;
+  $("mgmtRate").value = p.mgmtRate || 0;
+  $("taxRate").value = p.taxRate || 0;
+  $("companyName").value = (p.company && p.company.name) || "";
+  $("companyAddress").value = (p.company && p.company.address) || "";
+  $("companySite").value = (p.company && p.company.site) || "";
+  $("companyPhone").value = (p.company && p.company.phone) || "";
+  renderDetail(); renderSummary(); renderCustom(); renderWater();
+  fillProjSelect();
+}
+
+/* ---------- 导入 / 导出 ---------- */
+function importExcel (ev) {
+  var file = ev.target.files && ev.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      var wb = XLSX.read(new Uint8Array(e.target.result), { type: "array" });
+      var np = createProjectFromWorkbook(wb, file.name.replace(/\.(xlsx|xls|csv)$/i, ""));
+      var ptCount = np.partitions.length, rgCount = 0, rwCount = 0;
+      np.partitions.forEach(function (pt) { rgCount += pt.regions.length; pt.regions.forEach(function (rg) { rwCount += rg.rows.length; }); });
+      toast("导入成功：分区 " + ptCount + " / 区域 " + rgCount + " / 明细行 " + rwCount + "；定制行 " + np.custom.wardrobe.length + "+" + np.custom.kitchen.length + "；水电工程行 " + np.water.items.length);
+    } catch (err) {
+      toast("导入失败：" + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  ev.target.value = "";
+}
+function saveWorkbook (wb, name) {
+  wb.xlsx.writeBuffer().then(function (buf) {
+    var blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+  }).catch(function (err) { toast("导出失败：" + err.message); });
+}
+function exportExcel () {
+  try {
+    var wb = QuoteCore.buildExportWorkbook(current());
+    var name = (current().name || "装修报价") + "_报价单.xlsx";
+    saveWorkbook(wb, name);
+    toast("已导出 Excel：" + name);
+  } catch (err) { toast("导出失败：" + err.message); }
+}
+function downloadBlankTemplate () {
+  try {
+    var wb = QuoteCore.buildExportWorkbook(QuoteCore.buildBlankProject());
+    saveWorkbook(wb, "装修报价模板.xlsx");
+    toast("已下载空白模板（5 Sheet：项目信息/家装报价明细/定制明细/水电明细/报价汇总）");
+  } catch (err) { toast("模板下载失败：" + err.message); }
+}
+function exportJSON () {
+  var blob = new Blob([JSON.stringify(projects, null, 2)], { type: "application/json" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = (current().name || "装修报价") + "_备份.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importJSON (ev) {
+  var file = ev.target.files && ev.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      var arr = JSON.parse(e.target.result);
+      if (!Array.isArray(arr)) arr = [arr];
+      arr.forEach(QuoteCore.migrateProject);
+      projects = arr.length ? arr : projects;
+      currentIdx = 0;
+      fillProjSelect(); renderAll(); persist();
+      toast("JSON 备份导入成功：" + projects.length + " 个项目");
+    } catch (err) { toast("JSON 导入失败：" + err.message); }
+  };
+  reader.readAsText(file);
+  ev.target.value = "";
+}
+
+/* ---------- 初始化 ---------- */
+loadProjects();
+loadTrash();
+initTheme();
+renderAll();
+showHome();
+
+</script>
+</body>
+</html>
